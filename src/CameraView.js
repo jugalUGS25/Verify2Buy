@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, Image, ScrollView, Animated, Modal, FlatList, Dimensions, ImageBackground, useWindowDimensions, Button } from 'react-native';
+import React, { useEffect, useState, useRef} from 'react';
+import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, Image, ScrollView, Modal, FlatList, Dimensions, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Overlay } from './Overlay';
 import { StatusBar } from 'react-native';
 import {
   Camera, useCameraDevice, useCodeScanner, useFrameProcessor,
@@ -14,16 +13,14 @@ import { PermissionsAndroid } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import closeimg from '../assets/closeicon.png';
 import Translatelanguages from './Translate';
-import glass from '../assets/glass.jpg'
 import logo from '../assets/logo.png'
-import logomain from '../assets/logomain.png'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import RNExitApp from 'react-native-exit-app';
 import MenuDrawer from 'react-native-side-drawer'
 import DeviceInfo, { useIsEmulator } from 'react-native-device-info'
 import { openDatabase } from 'react-native-sqlite-storage'
 import ViewShot from 'react-native-view-shot';
-import DeviceCountry from 'react-native-device-country';
+// import DeviceCountry from 'react-native-device-country';
 import LinearGradient from 'react-native-linear-gradient';
 // import translate from 'translate-google-api';
 
@@ -42,7 +39,7 @@ export default function CameraView({ navigation }) {
   const [imageurl, setImage] = useState('')
   const [imagelarge, setImagelarge] = useState('')
   const [visible, setvisible] = useState(false)
-  const [visibleimg, setvisibleimg] = useState(false)
+  // const [visibleimg, setvisibleimg] = useState(false)
   const [modalVisible, setmodalvisible] = useState(false)
   const [cameralaoding, setcameralaoding] = useState(false)
   const [camerview, setcamerview] = React.useState(false);
@@ -54,8 +51,8 @@ export default function CameraView({ navigation }) {
   const [longitude, setlongitude] = React.useState('');
   const [code_type, setcodetype] = React.useState('');
   const [fontSize, setFontSize] = useState(15);
-    const [translatestate,Settranslatestate]=useState(false)
-    const [translatetext,Settranslatetext]=useState('')
+  const [translatestate, Settranslatestate] = useState(false)
+  // const [translatetext, Settranslatetext] = useState('')
   const [counter, setCounter] = useState(1);
   //   const[galleryimage,Setgalleryimage]=useState('')
   const [hoveredIndex, setHoveredIndex] = useState(null)
@@ -65,14 +62,14 @@ export default function CameraView({ navigation }) {
   const [responsefail, setresponsefail] = useState(false);
   const [networkerror, setnetworkerror] = useState(false);
   const [networkslow, setnetworkslow] = useState(false);
-  const [india,setIndia] = useState('')
-  const [loadingImage,setloading]= useState('')
-  const [popupdialog, setpopupdialog] = useState(false)
+  const [india, setIndia] = useState('')
+  // const [loadingImage, setloading] = useState('')
+  // const [popupdialog, setpopupdialog] = useState(false)
   const camera = useRef(null);
   const devices = useCameraDevice(value)
   const screenShot = useRef();
 
-  
+
 
   // const nopopup=async()=>{
   //     // const photos= await camera.current.takePhoto();
@@ -120,7 +117,6 @@ export default function CameraView({ navigation }) {
     setvalue('back')
   }
 
-  // const translateY = useRef(new Animated.Value(0)).current;
   const { width, height } = useWindowDimensions();
 
   const trochon = () => {
@@ -133,18 +129,18 @@ export default function CameraView({ navigation }) {
     setTrochicon(true)
   }
 
-    const opentranslateform =async()=>{
-      Settranslatestate(true)
-      // try {
-      //   const result = await translate(["Hi", "How are you?", `I'm fine`], {
-      //     tld: "cn",
-      //     to: "vi",
-      //   });
-      //   console.log(result);
-      // } catch (error) {
-      //   console.error("Translation error:", error);
-      // }
-    }
+  // const opentranslateform =async()=>{
+  //   Settranslatestate(true)
+  //   try {
+  //     const result = await translate(["Hi", "How are you?", `I'm fine`], {
+  //       tld: "cn",
+  //       to: "vi",
+  //     });
+  //     console.log(result);
+  //   } catch (error) {
+  //     console.error("Translation error:", error);
+  //   }
+  // }
 
   const closeError = () => {
     setresponsefail(false)
@@ -172,7 +168,7 @@ export default function CameraView({ navigation }) {
         let brand = DeviceInfo.getBrand()
         // let country = DeviceInfo.getCountryCode()
         console.log(brand)
-      //  console.log('country',country)
+        //  console.log('country',country)
         setbarnd(brand)
         setOS(Platform.OS)
       }
@@ -190,28 +186,28 @@ export default function CameraView({ navigation }) {
       .then(location => {
         setlatitude(location.latitude);
         setlongitude(location.longitude)
-        country(location.latitude,location.longitude)
-        console.log('loaction',location)
+        country(location.latitude, location.longitude)
+        console.log('loaction', location)
       })
       .catch(error => {
         const { code, message } = error;
         console.warn(code, message);
       })
 
-      // DeviceCountry.getCountryCode()
-      // .then((result) => {
-      //   setIndia(result.code)
-      //   console.log(result.code)
-      // })
-      // .catch((e) => {
-      //   console.log(e);
-      // });
+    // DeviceCountry.getCountryCode()
+    // .then((result) => {
+    //   setIndia(result.code)
+    //   console.log(result.code)
+    // })
+    // .catch((e) => {
+    //   console.log(e);
+    // });
 
   }
 
 
-  const country = async (latitude,longitude) => {
-    try { 
+  const country = async (latitude, longitude) => {
+    try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
         {
@@ -221,12 +217,12 @@ export default function CameraView({ navigation }) {
             'Accept': 'application/json',
           },
         }
-        
+
       );
-  
-     if (response) {
-       const data = await response.json();
-      const rescoun = data.address
+
+      if (response) {
+        const data = await response.json();
+        const rescoun = data.address
         setIndia(rescoun.country)
       }
     } catch (error) {
@@ -248,7 +244,7 @@ export default function CameraView({ navigation }) {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       }
-      
+
     }
 
     try {
@@ -260,18 +256,10 @@ export default function CameraView({ navigation }) {
           res.token
         );
         // navigation.navigate('Scanner')
-        console.log('res',res.token)
+        console.log('res', res.token)
       }
     } catch (error) {
       console.log(error)
-      // Alert.alert('', 'Network Error', [
-      //     {
-      //       text: 'Cancel',
-      //       onPress: () => console.log('Cancel Pressed'),
-      //       style: 'cancel',
-      //     },
-      //     {text: 'OK', onPress: () => console.log('OK Pressed')},
-      //   ]);
       setnetworkerror(true)
     }
   }
@@ -301,9 +289,6 @@ export default function CameraView({ navigation }) {
     );
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
       console.log("Camera permission granted");
-      // setvalue('back')
-      // setcamerview(true)
-
     } else {
       console.log("Camera permission denied");
     }
@@ -318,12 +303,12 @@ export default function CameraView({ navigation }) {
       setproduct('');
       setproductname('');
       setdes('')
-      setregion(''); 
+      setregion('');
       setImage('');
       setcategory('');
       for (const code of codes) {
         console.log(`Code Value: ${code.value}`);
-        console.log('code',code)
+        console.log('code', code)
         setdatacode(code.value)
         setcodetype(code.type)
 
@@ -345,118 +330,91 @@ export default function CameraView({ navigation }) {
           setdatacode(code.value)
         }
       }
-       submit()
+      submit()
     }
-    
+
   })
 
-  //  const submit = async () => {
-  //   if (datacode !== "") {
-  //   const body =  [datacode] ;
-
-  //   fetch('https://api.gs1us.org/product/trial/Products/v7/GetProductsByGTIN', {
-  //           method: 'POST',
-  //           body: JSON.stringify(body),
-  //           // Request headers
-  //           headers: {
-  //               'Content-Type': 'application/json',
-  //               'Cache-Control': 'no-cache',
-  //               'ApiKey': '0f4e5a0e4ca94b4a87f1121edea01186',}
-  //       })
-  //       .then(response => {
-  //         console.log(response.status);
-  //         return response.text();
-  //       })
-  //       .then(data=>console.log(data))
-  //       .catch(err => console.error(err));
-  //     }
-      
-  //   }
 
   const submit = async () => {
     const token = await AsyncStorage.getItem('access_token');
     setmodalvisible(true)
-    //setcamerview(false)
-      // alert('success')
-      if (datacode !== "") {
-        setcamerview(false);
-        const device_id = await AsyncStorage.getItem('deviceid');
-        //console.log(device_id)
+    if (datacode !== "") {
+      setcamerview(false);
+      let data = {
+        method: 'POST',
+        credentials: 'same-origin',
+        mode: 'same-origin',
+        body: JSON.stringify({
+          "code": datacode,
+          "encryptResponse": false,
+          "codeType": code_type,
+          "deviceType": OS,
+          "deviceModel": devicebrand,
+          "latitude": latitude,
+          "longitude": longitude,
+          "deviceId": "",
+          "location": "",
+          "country": ""
+        }),
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      };
+      //console.log('datastored',data)
 
-        let data = {
-          method: 'POST',
-          credentials: 'same-origin',
-          mode: 'same-origin',
-          body: JSON.stringify({
-            "code": datacode,
-            "encryptResponse": false,
-            "codeType": code_type,
-            "deviceType": OS,
-            "deviceModel": devicebrand,
-            "latitude": latitude,
-            "longitude": longitude,
-            "deviceId": device_id,
-            "location": "",
-            "country": ""
-          }),
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+      // const controller = new AbortController();
+      // const timeoutId = setTimeout(() => controller.abort(),  15000);
+      // console.log('timeoutId',timeoutId)
+
+      try {
+        // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", {
+        //   ...data,
+        //   signal: controller.signal, 
+        // });
+        const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", data);
+
+        // clearTimeout(timeoutId);
+
+        if (response.status === 401) {
+          const newToken = await tokensubmit();
+          if (newToken) {
+            return submit(true);
           }
-        };
-        //console.log('datastored',data)
+        }
 
-        // const controller = new AbortController();
-        // const timeoutId = setTimeout(() => controller.abort(),  15000);
-        // console.log('timeoutId',timeoutId)
-
-        try {
-          // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", {
-          //   ...data,
-          //   signal: controller.signal, 
-          // });
-          const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", data);
-
-          // clearTimeout(timeoutId);
-
-          if (response.status === 401 ) {
-            const newToken = await tokensubmit();
-            if (newToken) {
-              return submit(true); 
-            }
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const res = await response.json();
+        if (response.status === 200) {
+          console.log('res', res)
+          if (res.success === false) {
+            setresponsefail(true)
+            setmodalvisible(false)
           }
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const res = await response.json();
-          if (response.status === 200) {
-            console.log('res', res)
-            if (res.success === false) {
-              setresponsefail(true)
+          else {
+            setTimeout(() => {
+              setvisible(true)
               setmodalvisible(false)
-            }
-            else {
-              setTimeout(() => {
-                setvisible(true)
-                setmodalvisible(false)
-                saveHistoryData(res)
-                //rewardsData()
-                setCounter(prevCounter => {
-                  const updatedCounter = prevCounter + 1;
-                  saveRewards(updatedCounter)
-                  return updatedCounter;
-                });
-                // setCounter(prevCounter => {
-                // const updatedCounter = prevCounter + 1;
-                // rewardsData(updatedCounter);
-                // return updatedCounter;
-                //});
-              }, 4000)
+              saveHistoryData(res)
+              //rewardsData()
+              setCounter(prevCounter => {
+                const updatedCounter = prevCounter + 1;
+                saveRewards(updatedCounter)
+                return updatedCounter;
+              });
+              // setCounter(prevCounter => {
+              // const updatedCounter = prevCounter + 1;
+              // rewardsData(updatedCounter);
+              // return updatedCounter;
+              //});
+            }, 4000)
 
-            }
-            
+          }
+
           setproduct(res.product.brand);
           setproductname(res.product.name);
           setcategory(res.product.category);
@@ -476,29 +434,29 @@ export default function CameraView({ navigation }) {
           // setImage(res.product.imageUrl);
           setImagelarge(res.product.imageUrl)
 
-          }
-          else {
-            setmodalvisible(false)
-            Alert.alert('', 'error', [
-              {
-                text: 'Cancel',
-                onPress: () => console.log('Cancel Pressed'),
-                style: 'cancel',
-              },
-              { text: 'OK', onPress: () => console.log('OK Pressed') },
-            ]);
-          }
-
         }
-
-        catch (error) {
-          console.log('error api', error)
+        else {
           setmodalvisible(false)
-          setdatacode('')
-          setcamerview(true)
+          Alert.alert('', 'error', [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+            { text: 'OK', onPress: () => console.log('OK Pressed') },
+          ]);
         }
+
       }
-    
+
+      catch (error) {
+        console.log('error api', error)
+        setmodalvisible(false)
+        setdatacode('')
+        setcamerview(true)
+      }
+    }
+
     // else {
     //   tokensubmit()
     //   submit()
@@ -515,7 +473,7 @@ export default function CameraView({ navigation }) {
     }
   };
 
-  const rewardsData = async() => {
+  const rewardsData = async () => {
     const rewards = await AsyncStorage.getItem('rewards');
     console.log('points', rewards);
     db.transaction(function (tx) {
@@ -560,53 +518,18 @@ export default function CameraView({ navigation }) {
         );
       });
     }
-    // try {
-
-    //   const existingData = await AsyncStorage.getItem('histyusers');   // Retrieve existing history data
-    //   let historydata = existingData ? JSON.parse(existingData) : [];
-
-    //   if (!Array.isArray(historydata)) {
-    //     historydata = [];                 // Ensure historydata is an array
-    //   }
-
-    //   const newData = res.product;        
-    //   historydata.push(newData);         // Add the new product name to history
-
-    //   await AsyncStorage.setItem('histyusers', JSON.stringify(historydata));     // Save updated history back to AsyncStorage
-
-    //   console.log('Updated history:', historydata);
-    // } catch (error) {
-    //   console.error('Error saving history data:', error);
-    // }
   };
 
 
-  const openImage = () => {
-    setvisibleimg(true)
-  }
+  // const openImage = () => {
+  //   setvisibleimg(true)
+  // }
 
-  const addCart = () => {
-    Alert.alert('', 'Product added to your cart', [
-      { text: 'OK', onPress: () => console.log('OK Pressed') },
-    ]);
-  }
-
-  const close = () => {
-    setdatacode('')
-    setproduct("");
-    setproductname("");
-    setdes('')
-    setregion('');
-    setImage('');
-    setvisible(false)
-    setFontSize(15)
-    setcamerview(true)
-    setvalue('back')
-    setbutton(false)
-  }
-  const closeImage = () => {
-    setvisibleimg(false)
-  }
+  // const addCart = () => {
+  //   Alert.alert('', 'Product added to your cart', [
+  //     { text: 'OK', onPress: () => console.log('OK Pressed') },
+  //   ]);
+  // }
 
   const increaseFontSize = () => {
     setFontSize(prevSize => prevSize + 2);
@@ -623,7 +546,7 @@ export default function CameraView({ navigation }) {
     setproduct('');
     setproductname('');
     setdes('')
-    setregion(''); 
+    setregion('');
     setImage('');
     setcategory('');
     setvisible(false)
@@ -633,18 +556,18 @@ export default function CameraView({ navigation }) {
     setvalue('back')
   }
 
-    const closeicontranslate =()=>{
-      Settranslatestate(false)
-    }
-
-  const languageselect =(item)=>{
-    // console.log(item)
-    // if(item === "Tamil")
-    // {
-    // Settranslatetext("ta")
-    // }
-    // translateapi()
+  const closeicontranslate = () => {
+    Settranslatestate(false)
   }
+
+  // const languageselect =(item)=>{
+  //   console.log(item)
+  //   if(item === "Tamil")
+  //   {
+  //   Settranslatetext("ta")
+  //   }
+  //   translateapi()
+  // }
 
   // const translateapi=async()=>{
   //   alert('yes')
@@ -723,7 +646,7 @@ export default function CameraView({ navigation }) {
 
 
   const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)'},
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
     // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
@@ -740,7 +663,7 @@ export default function CameraView({ navigation }) {
   const footermenuItems = [
     { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
     { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)'},
+    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
     { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
   ];
@@ -767,62 +690,62 @@ export default function CameraView({ navigation }) {
             source={logo}
           />
           <TouchableOpacity onPress={appicon}>
-            <Text style={{  fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 5, paddingTop: 3}}>Verify2Buy</Text>
+            <Text style={styles.Apptitle}>Verify2Buy</Text>
           </TouchableOpacity>
         </View>
-        {india === "India" ?(
-        <View style={styles.menncontainer}>
-          {menuItemsIndia.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.menubar,
-                hoveredIndex === index && styles.menubarHovered,
-              ]}
-              onPressIn={() => setHoveredIndex(index)}
-              onPressOut={() => setHoveredIndex(null)}
-              onPress={() => naviagtion(item.id)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Icon
-                  name={item.icon}
-                  size={25}
-                  color={item.iconColor}
-                  style={{ marginLeft: 10, marginTop: 5 }}
-                />
-                <Text style={{  fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-        ):(
-    <View style={styles.menncontainer}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.menubar,
-                hoveredIndex === index && styles.menubarHovered,
-              ]}
-              onPressIn={() => setHoveredIndex(index)}
-              onPressOut={() => setHoveredIndex(null)}
-              onPress={() => naviagtion(item.id)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Icon
-                  name={item.icon}
-                  size={25}
-                  color={item.iconColor}
-                  style={{ marginLeft: 10, marginTop: 5 }}
-                />
-                <Text style={{  fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {india === "India" ? (
+          <View style={styles.menncontainer}>
+            {menuItemsIndia.map((item, index) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.menubar,
+                  hoveredIndex === index && styles.menubarHovered,
+                ]}
+                onPressIn={() => setHoveredIndex(index)}
+                onPressOut={() => setHoveredIndex(null)}
+                onPress={() => naviagtion(item.id)}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Icon
+                    name={item.icon}
+                    size={25}
+                    color={item.iconColor}
+                    style={{ marginLeft: 10, marginTop: 5 }}
+                  />
+                  <Text style={styles.screentitle}>{item.label}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.menncontainer}>
+            {menuItems.map((item, index) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.menubar,
+                  hoveredIndex === index && styles.menubarHovered,
+                ]}
+                onPressIn={() => setHoveredIndex(index)}
+                onPressOut={() => setHoveredIndex(null)}
+                onPress={() => naviagtion(item.id)}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Icon
+                    name={item.icon}
+                    size={25}
+                    color={item.iconColor}
+                    style={{ marginLeft: 10, marginTop: 5 }}
+                  />
+                  <Text style={styles.screentitle}>{item.label}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
         <View style={styles.footerTextcontainer}>
-          <Text style={{  fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 10,flexWrap: 'wrap' }}>Follow us on</Text>
+          <Text style={styles.Followus}>Follow us on</Text>
         </View>
         <View style={styles.footerContainer}>
           {footermenuItems.map((item, index) => (
@@ -935,17 +858,17 @@ export default function CameraView({ navigation }) {
 
   return (
     <>
-    <MenuDrawer
-              open={isOpen}
-              position={'left'}
-              drawerContent={menucontent()}
-              drawerPercentage={300}
-              animationTime={250}
-              overlay={true}
-              opacity={0.4}
-            >
+      <MenuDrawer
+        open={isOpen}
+        position={'left'}
+        drawerContent={menucontent()}
+        drawerPercentage={300}
+        animationTime={250}
+        overlay={true}
+        opacity={0.4}
+      >
         {/* <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-         <LinearGradient colors ={["#88def1","#04467e"]} style={{ flex: 1,}} >
+        <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
           {/* <ScrollView> */}
           <SafeAreaView style={{ flex: 1, }}>
             <SafeAreaProvider>
@@ -1021,131 +944,131 @@ export default function CameraView({ navigation }) {
             </SafeAreaProvider>
             <Modal visible={visible} animationType="slide" transparent={true}>
               <View style={styles.centeredView}>
-              <View style={styles.modalOverlay}>
-                <View  style={styles.modalView}>
-                  <ScrollView style={styles.oveallscrollView}  showsVerticalScrollIndicator={false}>
-                    <View style={styles.scalebutton} >
-                      <TouchableOpacity onPress={increaseFontSize}>
-                        <Text style={styles.buttonText}>A+</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={decreaseFontSize}>
-                        <Text style={styles.buttonText}>A-</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={opentranslateform} style={styles.translateicon} >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalView}>
+                    <ScrollView style={styles.oveallscrollView} showsVerticalScrollIndicator={false}>
+                      <View style={styles.scalebutton} >
+                        <TouchableOpacity onPress={increaseFontSize}>
+                          <Text style={styles.buttonText}>A+</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={decreaseFontSize}>
+                          <Text style={styles.buttonText}>A-</Text>
+                        </TouchableOpacity>
+                        {/* <TouchableOpacity onPress={opentranslateform} style={styles.translateicon} >
                         <Icon
                           name="google-translate"
                           size={25}
                           color="rgb(71, 162, 228)"
                         />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={closeicon} style={styles.closeicon} >
-                        <Icon
-                          name="close-circle"
-                          size={25}
-                          color="rgb(71, 162, 228)"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    <ViewShot
-                      ref={screenShot}
-                      options={{
-                        fileName: "img",
-                        format: 'jpg',
-                        quality: 1,
-                        result: 'tmpfile'
-                      }}>
-                      <View style={{ marginTop: 10 }}>
-                        <Text style={styles.productheading}>Product Details :</Text>
-                        <Text style={styles.headgrid}>Brand: </Text>
-                        {product === "" || product === null ? (
-                          <Text style={styles.textgridfail}>No Brand Found</Text>
-                        ) : (
-                          <Text style={[styles.textgridbrand, { fontSize }]}>{product}</Text>
-                        )}
-                        <Text style={styles.headgrid}>Product Name: </Text>
-                        {productname === "" || productname === null ? (
-                          <Text style={[styles.textgridfail, { fontSize }]}>No Product Name Found</Text>
-                        ) : (
-                          <Text style={[styles.textgridpro, { fontSize }]}>{productname}</Text>
-                        )}
-                        <Text style={styles.headgrid}>Category: </Text>
-                        {category === "" || category === null ? (
-                          <Text style={[styles.textgridfail, { fontSize }]}>No Category Found</Text>
-                        ) : (
-                          <Text style={[styles.textgridpro, { fontSize }]}>{category}</Text>
-                        )}
-                        <Text style={styles.headgrid}>Description:</Text>
-                        {des === "" || des === null || des === "No description found." ? (
-                          <Text style={styles.textgridfail}>No Description Found</Text>
-                        ) : (
-                          <Text style={[styles.textgriddes, { fontSize }]}>{des}</Text>
-                        )}
-                        <Text style={styles.headgridregion}>Region:</Text>
-                        {region === "" || region === null ? (
-                          <Text style={[styles.textgridfail, { fontSize }]}>No Region Found</Text>
-                        ) : (
-                          <Text style={[styles.textgridbrand, { fontSize }]}>{region}</Text>
-                        )}
-                        <View style={styles.imagerow}>
-                          <Text style={{ color: 'black', fontSize: 15, fontWeight: 'bold' }} >Image:</Text>
-                          {/* <TouchableOpacity onPress={addCart}>
+                      </TouchableOpacity> */}
+                        <TouchableOpacity onPress={closeicon} style={styles.closeicon} >
+                          <Icon
+                            name="close-circle"
+                            size={25}
+                            color="rgb(71, 162, 228)"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <ViewShot
+                        ref={screenShot}
+                        options={{
+                          fileName: "img",
+                          format: 'jpg',
+                          quality: 1,
+                          result: 'tmpfile'
+                        }}>
+                        <View style={{ marginTop: 10 }}>
+                          <Text style={styles.productheading}>Product Details :</Text>
+                          <Text style={styles.headgrid}>Brand: </Text>
+                          {product === "" || product === null ? (
+                            <Text style={styles.textgridfail}>No Brand Found</Text>
+                          ) : (
+                            <Text style={[styles.textgridbrand, { fontSize }]}>{product}</Text>
+                          )}
+                          <Text style={styles.headgrid}>Product Name: </Text>
+                          {productname === "" || productname === null ? (
+                            <Text style={[styles.textgridfail, { fontSize }]}>No Product Name Found</Text>
+                          ) : (
+                            <Text style={[styles.textgridpro, { fontSize }]}>{productname}</Text>
+                          )}
+                          <Text style={styles.headgrid}>Category: </Text>
+                          {category === "" || category === null ? (
+                            <Text style={[styles.textgridfail, { fontSize }]}>No Category Found</Text>
+                          ) : (
+                            <Text style={[styles.textgridpro, { fontSize }]}>{category}</Text>
+                          )}
+                          <Text style={styles.headgrid}>Description:</Text>
+                          {des === "" || des === null || des === "No description found." ? (
+                            <Text style={styles.textgridfail}>No Description Found</Text>
+                          ) : (
+                            <Text style={[styles.textgriddes, { fontSize }]}>{des}</Text>
+                          )}
+                          <Text style={styles.headgridregion}>Region:</Text>
+                          {region === "" || region === null ? (
+                            <Text style={[styles.textgridfail, { fontSize }]}>No Region Found</Text>
+                          ) : (
+                            <Text style={[styles.textgridbrand, { fontSize }]}>{region}</Text>
+                          )}
+                          <View style={styles.imagerow}>
+                            <Text style={{ color: 'black', fontSize: 15, fontWeight: 'bold' }} >Image:</Text>
+                            {/* <TouchableOpacity onPress={addCart}>
                             <Icon
                               name="cart-plus"
                               size={25}
                               color="#00C4CC"
                             />
                           </TouchableOpacity> */}
-                        </View>
-                        {/* {imageurl?(
+                          </View>
+                          {/* {imageurl?(
                         <></>
                         ):(
                           <Text>Loading...</Text>
                         )} */}
-                        {imageurl !== "" ? (
-                          <>
-                            <View style={{ marginTop: 5 }}>
-                              {/* <TouchableOpacity onPress={openImage}> */}
+                          {imageurl !== "" ? (
+                            <>
+                              <View style={{ marginTop: 5 }}>
+                                {/* <TouchableOpacity onPress={openImage}> */}
                                 <Image
                                   source={{ uri: imageurl }}
                                   style={{ width: 250, height: 250, }}
                                 />
-                              {/* </TouchableOpacity> */}
-                            </View>
-                          </>
-                        ) : (
-                          <Text style={[styles.textgridfail, { fontSize }]}>No Image Found</Text>
-                        )}
-                      </View>
-                      <Text style={{ fontSize: 14, color: 'black', fontWeight: 'bold', width: 250, flexWrap: 'wrap',marginTop:5, }}>Does the scanned image match the item you’re going to purchase?</Text>
-                      <View style={styles.row}>
-                        <TouchableOpacity onPress={handeltakeSCreenshot}>
-                          <Text style={styles.buttoniamgeNoText}>
-                            NO
-                          <Icon
-                              name="close-circle"
-                              size={15}
-                              color="white"
-                            />
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={popupsucesss}>
-                          <Text style={styles.buttoniamgeYesText}>
-                            YES
-                          <Icon
-                              name="check-circle"
-                              size={15}
-                              color="white"
-                            />
+                                {/* </TouchableOpacity> */}
+                              </View>
+                            </>
+                          ) : (
+                            <Text style={[styles.textgridfail, { fontSize }]}>No Image Found</Text>
+                          )}
+                        </View>
+                        <Text style={{ fontSize: 14, color: 'black', fontWeight: 'bold', width: 250, flexWrap: 'wrap', marginTop: 5, }}>Does the scanned image match the item you’re going to purchase?</Text>
+                        <View style={styles.row}>
+                          <TouchableOpacity onPress={handeltakeSCreenshot}>
+                            <Text style={styles.buttoniamgeNoText}>
+                              NO
+                              <Icon
+                                name="close-circle"
+                                size={15}
+                                color="white"
+                              />
                             </Text>
-                        </TouchableOpacity>
-                        {/* <Button title='No' color="#faa19b" onPress={handeltakeSCreenshot}/>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={popupsucesss}>
+                            <Text style={styles.buttoniamgeYesText}>
+                              YES
+                              <Icon
+                                name="check-circle"
+                                size={15}
+                                color="white"
+                              />
+                            </Text>
+                          </TouchableOpacity>
+                          {/* <Button title='No' color="#faa19b" onPress={handeltakeSCreenshot}/>
                       <Button title='Yes' color="#caeec2" onPress={popupsucesss} /> */}
-                      </View>
-                    </ViewShot>
-                    {/* <TouchableOpacity style={styles.productclosebutton} onPress={close}>
+                        </View>
+                      </ViewShot>
+                      {/* <TouchableOpacity style={styles.productclosebutton} onPress={close}>
               <Text style={styles.closetext}>CLOSE</Text>
             </TouchableOpacity>  */}
-                  </ScrollView>
+                    </ScrollView>
                   </View>
                 </View>
               </View>
@@ -1191,72 +1114,39 @@ export default function CameraView({ navigation }) {
 
             {/* NO PRODUCTS FOUND */}
 
-            {/* <View>
-              <Dialog.Container visible={responsefail} overlayStyle={{ backgroundColor: '#333333' }}>
-                <Dialog.Description>
-                  <View style={styles.gridview}>
-                    <Text style={styles.fakeheader}>Sorry, No Products Found !
-                    </Text>
-                  </View>
-                </Dialog.Description>
-
-                <TouchableOpacity style={styles.errorbutton} onPress={closeError}>
-                  <Text style={styles.errortext}>CLOSE</Text>
-                </TouchableOpacity>
-              </Dialog.Container>
-            </View> */}
-
             <Modal visible={responsefail} transparent={true}>
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                <Text style={styles.fakeheader}>Sorry, No Products Found !</Text>
-                <TouchableOpacity style={styles.errorbutton} onPress={closeError}>
-                  <Text style={styles.errortext}>Close</Text>
-                </TouchableOpacity>
+                  <Text style={styles.fakeheader}>Sorry, No Products Found !</Text>
+                  <TouchableOpacity style={styles.errorbutton} onPress={closeError}>
+                    <Text style={styles.errortext}>Close</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </Modal>
 
-            {/* NO PRODUCTS FOUND */}
+
 
             {/* Network error */}
 
-            {/* <Dialog.Container visible={networkerror} animationType="slide" >
-              <Dialog.Description>
-                <View style={styles.gridview}>
-                  <Text style={styles.fakeheader}>Network Error
-                    <Icon
-                      name="access-point-network-off"
-                      size={25}
-                      color="#DC143C"
-                    />
-                  </Text>
-                  <Text style={styles.faketext}>Please try again later to scan the products
-                  </Text>
-                </View>
-              </Dialog.Description>
-              <TouchableOpacity style={styles.errorbutton} onPress={networkError}>
-                <Text style={styles.errortext}>CLOSE</Text>
-              </TouchableOpacity>
-            </Dialog.Container> */}
 
             <Modal visible={networkerror} transparent={true}>
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                <View style={styles.gridview}>
-                  <Text style={styles.fakeheader}>Network Error
-                    <Icon
-                      name="access-point-network-off"
-                      size={25}
-                      color="#00C4CC"
-                    />
-                  </Text>
-                  <Text style={styles.faketext}>Please try again later to scan the products
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.errorbutton} onPress={networkError}>
-                <Text style={styles.errortext}>CLOSE</Text>
-              </TouchableOpacity>
+                  <View style={styles.gridview}>
+                    <Text style={styles.fakeheader}>Network Error
+                      <Icon
+                        name="access-point-network-off"
+                        size={25}
+                        color="#04467e"
+                      />
+                    </Text>
+                    <Text style={styles.faketext}>Please try again later to scan the products
+                    </Text>
+                  </View>
+                  <TouchableOpacity style={styles.errorbutton} onPress={networkError}>
+                    <Text style={styles.errortext}>CLOSE</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </Modal>
@@ -1268,7 +1158,7 @@ export default function CameraView({ navigation }) {
                     <Icon
                       name="access-point-network-off"
                       size={25}
-                      color="#DC143C"
+                      color="#04467e"
                     />
                   </Text>
                   <Text style={styles.faketext}>Please check your connection and try again.
@@ -1281,7 +1171,7 @@ export default function CameraView({ navigation }) {
               </TouchableOpacity>
             </Dialog.Container>
 
-           
+
 
             <Modal
               animationType="slide"
@@ -1312,40 +1202,40 @@ export default function CameraView({ navigation }) {
               </View>
             </Modal>
             <Modal
-          animationType="slide"
-          transparent={true}
-          visible={translatestate}
-        >
-          <View style={styles.translatePopuploadingcenteredView}>
-          <View style={styles.translatePopuploadingView}>
-          <View style={{ flex: 1, justifyContent: "center" }}>
-                <FlatList
-                  data={Object.values(Translatelanguages)}
-                  renderItem={(itemData) => {
-                    const languageKey = itemData.item;
-                    // const languageString = Translatelanguages[languageKey];
-                    return (
-                      <TouchableOpacity onPress={()=>languageselect(languageKey)}>
-                        <Text>{languageKey}</Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
-           <TouchableOpacity onPress={closeicontranslate} style={styles.closetranslate} >
-            <Image
-            style={styles.tinyLogo}
-            source={closeimg}
-            />
-          </TouchableOpacity>
-          </View>
-          </View>
-          </View>
-        </Modal>
+              animationType="slide"
+              transparent={true}
+              visible={translatestate}
+            >
+              <View style={styles.translatePopuploadingcenteredView}>
+                <View style={styles.translatePopuploadingView}>
+                  <View style={{ flex: 1, justifyContent: "center" }}>
+                    <FlatList
+                      data={Object.values(Translatelanguages)}
+                      renderItem={(itemData) => {
+                        const languageKey = itemData.item;
+                        // const languageString = Translatelanguages[languageKey];
+                        return (
+                          <TouchableOpacity onPress={() => languageselect(languageKey)}>
+                            <Text>{languageKey}</Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                    />
+                    <TouchableOpacity onPress={closeicontranslate} style={styles.closetranslate} >
+                      <Image
+                        style={styles.tinyLogo}
+                        source={closeimg}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
             <View>
             </View>
           </SafeAreaView>
           {/* </ScrollView> */}
-        {/* </ImageBackground> */}
+          {/* </ImageBackground> */}
         </LinearGradient>
       </MenuDrawer>
     </>
@@ -1366,22 +1256,12 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
 
-  // menuopenbottom:{
-  //   marginLeft:10,
-  //   bottom:40
-  // },
-
   sidemenu: {
     flex: 1,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
     width: 280
   },
-  // container: {
-  //   display:'flex',
-  //   flex: 1, 
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  // },
+
   container: {
     flex: 1, // Ensures full-screen view
   },
@@ -1434,22 +1314,7 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginTop: 2
   },
-  urlbar: {
-    width: 300,
-    //backgroundColor:'white',
-    textAlign: 'center',
-    fontSize: 12,
-    marginTop: 3,
-    color: "white",
 
-  },
-  // btncontainer: {
-  //   flex: 1,
-  //   flexDirection:'column-reverse',
-  //   marginBottom:10,
-  //   marginLeft:7
-
-  // },
   btncontainer: {
     display: 'flex',
     justifyContent: 'center',
@@ -1484,10 +1349,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: 'rgb(253, 126, 20)',
   },
-  //  rowLandscape: {
-  //   flexDirection: 'row', 
-  //   justifyContent: 'flex-start', 
-  // },
+
   btncontainertrue: {
     flex: 1,
     alignSelf: 'center',
@@ -1499,12 +1361,6 @@ const styles = StyleSheet.create({
     // height: height, 
     position: 'absolute',
   },
-  // landscapecontainer : {
-  //   marginTop: 10,
-  // },
-  // landscapeFill:{
-  //   marginTop
-  // },
 
   header: {
     padding: 20,
@@ -1562,8 +1418,6 @@ const styles = StyleSheet.create({
 
   },
 
-
-
   PopuploadingView: {
     margin: 5,
     //backgroundColor: "white",
@@ -1590,7 +1444,7 @@ const styles = StyleSheet.create({
     //marginLeft: 80,
     height: 40,
     width: 200,
-    backgroundColor:'#FFFFFF50',
+    backgroundColor: '#FFFFFF50',
     borderRadius: 50,
     borderColor: 'rgb(253, 126, 20)',
     alignItems: 'center',
@@ -1605,24 +1459,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4c99f6',
     borderRadius: 50,
   },
-  gallery: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#4c99f6',
-    borderRadius: 50,
-  },
-  singoff: {
-    display: 'flex',
-    flexDirection: 'column',
-    //alignItems: 'flex-end',
-    textAlign: 'right',
-    marginTop: 130,
-    marginLeft: 230
-  },
-  singoffImage: {
-    backgroundColor: 'rgb(253, 126, 20)',
-    borderRadius: 50,
-  },
+
   textscale: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1639,7 +1476,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F57C00',
     color: 'white',
     borderRadius: 30,
-   
+
   },
   buttoniamgeYesText: {
     fontSize: 15,
@@ -1649,7 +1486,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#388E3C',
     color: 'white',
     borderRadius: 30,
-    paddingLeft: 5, 
+    paddingLeft: 5,
   },
   buttonText: {
     fontSize: 15,
@@ -1666,12 +1503,15 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
-  // closeicon: {
-  //   marginLeft: 140
+
+  // translateicon: {
+  //   marginLeft: 105
   // },
-  translateicon: {
-    marginLeft: 105
+
+  closeicon: {
+    marginLeft: 140
   },
+
   productheading: {
     fontSize: 18,
     color: '#333333',
@@ -1700,10 +1540,7 @@ const styles = StyleSheet.create({
     //marginBottom: 10,
     maxHeight: 200,
   },
-  dialogscrollView: {
-    //marginBottom: 10,
-    maxHeight: 500,
-  },
+
   menncontainer: {
     display: 'flex',
     //justifyContent:'center',
@@ -1786,7 +1623,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
     // opacity: 0.8 ,
     borderRadius: 20,
     padding: 35,
@@ -1800,7 +1637,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
- 
+
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
@@ -1828,7 +1665,7 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 40,
     width: 100,
-    backgroundColor: '#00C4CC',
+    backgroundColor: '#04467e',
     borderRadius: 50,
     // / borderColor:'rgb(253, 126, 20)',
     flex: '1',
@@ -1839,7 +1676,7 @@ const styles = StyleSheet.create({
   },
 
   errortext: {
-    color: '#333333',
+    color: 'white',
     fontSize: 15,
     fontFamily: 'Times New Roman", Times, serif',
     fontWeight: 'bold'
@@ -1881,13 +1718,13 @@ const styles = StyleSheet.create({
   },
   fakeheader: {
     fontSize: 19,
-    color: '#00C4CC',
+    color: '#04467e',
     // flex:1,
     flexWrap: "wrap"
   },
   faketext: {
     fontSize: 17,
-    color: '#00C4CC'
+    color: '#04467e'
   },
   textgridbrand: {
     fontSize: 15,
@@ -1913,22 +1750,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
 
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white', 
-    // opacity: 0.8 ,
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+
   backgroundimage: {
     flex: 1,
     justifyContent: 'center',
@@ -1942,12 +1764,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 30
   },
-  // container: {
-  //   flex: 1,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   // backgroundColor: '#000',
-  // },
+
   imageWrapper: {
     width: 200,
     height: 200,
@@ -1959,18 +1776,31 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: 'contain',
   },
-  scannerLine: {
-    position: 'absolute',
-    width: 145,
-    marginLeft: 25,
-    height: 4,
-    backgroundColor: 'limegreen',
-    opacity: 0.8,
-  },
+
   popupicon: {
     display: 'flex',
     justifyContent: 'center'
   },
-  
+  screentitle: {
+    fontFamily: 'Roboto',
+    color: '#3078a4',
+    fontSize: 20,
+    paddingLeft: 15,
+    paddingTop: 3,
+  },
+  Apptitle: {
+    fontFamily: 'Roboto',
+    color: '#3078a4',
+    fontSize: 20,
+    paddingLeft: 5,
+    paddingTop: 3
+  },
+  Followus: {
+    fontFamily: 'Roboto',
+    color: '#3078a4',
+    fontSize: 20,
+    paddingLeft: 15,
+    paddingTop: 10
+  }
 });
 
