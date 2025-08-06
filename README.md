@@ -90,7 +90,6 @@ spring.datasource.password=<your-password>
 
 ## 👥 Contributors
 
-- You – Backend, Deployment, DevOps 💪
-- ChatGPT – Tech sidekick 🤖
+
 
 ---
