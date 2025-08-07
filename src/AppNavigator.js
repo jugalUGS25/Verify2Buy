@@ -8,6 +8,7 @@ import Login from './Login';
 import Logout from './Logout';
 import { Text, View, StyleSheet } from 'react-native';
 import Guide from './Guide';
+import colors from './theme/colors';
 
 
 const Stack = createNativeStackNavigator();
@@ -18,7 +19,7 @@ const AppNavigator = () => {
 
   return (
     <Stack.Navigator initialRouteName="Home" screenOptions={{
-      headerTintColor: '#3078a4',
+      headerTintColor: colors.blue,
     }}>
       <Stack.Screen name="Home" component={Login} options={{
         headerTitle: () => (
@@ -75,7 +76,7 @@ export default AppNavigator;
 const styles = StyleSheet.create({
   Headertext: {
     fontFamily: 'Roboto',
-    color: '#3078a4',
+    color: colors.blue,
     fontSize: 20
   }
 })

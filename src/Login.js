@@ -9,6 +9,7 @@ import one from '../assets/1.png'
 import two from '../assets/2.png'
 import three from '../assets/3.png'
 import four from '../assets/4.png'
+import colors from './theme/colors';
 const { maxwidth, maxheight } = Dimensions.get('window');
 
 export default function Login({ navigation }) {
@@ -116,27 +117,27 @@ export default function Login({ navigation }) {
   }
 
   const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: colors.blue },
+    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: colors.blue },
+    { id: 3, label: 'History', icon: 'history', iconColor: colors.blue },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: colors.blue },
+    { id: 5, label: 'Close App', icon: 'logout', iconColor: colors.blue },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: colors.blue },
+    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: colors.blue },
+    { id: 3, label: 'History', icon: 'history', iconColor: colors.blue },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: colors.blue },
+    { id: 5, label: 'Close App', icon: 'logout', iconColor: colors.blue },
   ];
 
   const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, icon: 'google-play', iconColor: colors.blue },
+    { id: 2, icon: 'apple', iconColor: colors.blue },
+    { id: 3, icon: 'linkedin', iconColor: colors.blue },
+    { id: 4, icon: 'file-excel-box', iconColor: colors.blue },
+    { id: 5, icon: 'instagram', iconColor: colors.blue },
   ];
 
   useEffect(() => {
@@ -181,7 +182,7 @@ export default function Login({ navigation }) {
             <Icon
               name="close-circle"
               size={25}
-              color="rgb(71, 162, 228)"
+              color={colors.blue}
             />
           </TouchableOpacity>
         </View>
@@ -191,7 +192,7 @@ export default function Login({ navigation }) {
             source={logo}
           />
           <TouchableOpacity onPress={appicon}>
-            <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 5, paddingTop: 3 }}>Verify2Buy</Text>
+            <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 5, paddingTop: 3 }}>Verify2Buy</Text>
           </TouchableOpacity>
         </View>
         {india === "India" || "in" ? (
@@ -214,7 +215,7 @@ export default function Login({ navigation }) {
                     color={item.iconColor}
                     style={{ marginLeft: 10, marginTop: 5 }}
                   />
-                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                  <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -239,14 +240,14 @@ export default function Login({ navigation }) {
                     color={item.iconColor}
                     style={{ marginLeft: 10, marginTop: 5 }}
                   />
-                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                  <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
         )}
         <View style={styles.footerTextcontainer}>
-          <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
+          <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
         </View>
         <View style={styles.footerContainer}>
           {footermenuItems.map((item, index) => (
@@ -285,7 +286,7 @@ export default function Login({ navigation }) {
       overlay={true}
       opacity={0.4}
     >
-      <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
+      <LinearGradient colors={[colors.blue, colors.green]} style={{ flex: 1, }} >
         {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
         <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
         <View>
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
     gap: 3,
     borderBottomColor: "white",
     borderLeftColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
+    borderTopColor: colors.blue,
     //borderRightColor:'white',
     borderWidth: 1,
   },
@@ -509,7 +510,7 @@ const styles = StyleSheet.create({
   footerTextcontainer: {
     // marginTop:70,
     borderBottomColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
+    borderTopColor: colors.blue,
     borderWidth: 1,
     borderLeftColor: "white",
     width: 290,
