@@ -18,13 +18,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import RNExitApp from 'react-native-exit-app';
 import MenuDrawer from 'react-native-side-drawer'
 import DeviceInfo, { useIsEmulator } from 'react-native-device-info'
-import { openDatabase } from 'react-native-sqlite-storage'
+import { connect, disconnect } from './db'
 import ViewShot from 'react-native-view-shot';
 // import DeviceCountry from 'react-native-device-country';
 import LinearGradient from 'react-native-linear-gradient';
 // import translate from 'translate-google-api';
 
-var db = openDatabase({ name: 'r2a.db' })
+const db = connect()
 
 const { maxwidth, maxheight } = Dimensions.get('window');
 
@@ -785,6 +785,12 @@ export default function CameraView({ navigation }) {
   const closeDrawer = () => {
     setIsOpen(false)
   }
+
+  useEffect(() => {
+    return () => {
+      disconnect()
+    }
+  }, [])
 
   useEffect(() => {
     tokensubmit()
