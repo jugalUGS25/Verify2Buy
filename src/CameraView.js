@@ -68,6 +68,8 @@ export default function CameraView({ navigation }) {
   const camera = useRef(null);
   const devices = useCameraDevice(value)
   const screenShot = useRef();
+  const tokenController = useRef(null);
+  const submitController = useRef(null);
 
 
 
@@ -232,6 +234,11 @@ export default function CameraView({ navigation }) {
 
 
   const tokensubmit = async () => {
+    if (tokenController.current) {
+      tokenController.current.abort();
+    }
+    const controller = new AbortController();
+    tokenController.current = controller;
     let authenticatedata = {
       method: 'POST',
       credentials: 'same-origin',
@@ -243,8 +250,8 @@ export default function CameraView({ navigation }) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
-      }
-
+      },
+      signal: controller.signal
     }
 
     try {
@@ -337,6 +344,11 @@ export default function CameraView({ navigation }) {
 
 
   const submit = async () => {
+    if (submitController.current) {
+      submitController.current.abort();
+    }
+    const controller = new AbortController();
+    submitController.current = controller;
     const token = await AsyncStorage.getItem('access_token');
     setmodalvisible(true)
     if (datacode !== "") {
@@ -361,22 +373,13 @@ export default function CameraView({ navigation }) {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+        },
+        signal: controller.signal,
       };
       //console.log('datastored',data)
 
-      // const controller = new AbortController();
-      // const timeoutId = setTimeout(() => controller.abort(),  15000);
-      // console.log('timeoutId',timeoutId)
-
       try {
-        // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", {
-        //   ...data,
-        //   signal: controller.signal, 
-        // });
         const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", data);
-
-        // clearTimeout(timeoutId);
 
         if (response.status === 401) {
           const newToken = await tokensubmit();
@@ -787,6 +790,10 @@ export default function CameraView({ navigation }) {
     tokensubmit()
     handellocation()
     // country()
+    return () => {
+      tokenController.current?.abort();
+      submitController.current?.abort();
+    };
   }, [])
 
 
