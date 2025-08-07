@@ -90,6 +90,6 @@ spring.datasource.password=<your-password>
 
 ## 👥 Contributors
 
-
+Neel Krishnan
 
 ---
