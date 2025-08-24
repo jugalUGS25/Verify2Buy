@@ -2,9 +2,12 @@ import React, { useEffect, useState, useRef} from 'react';
 import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, Image, ScrollView, Modal, FlatList, Dimensions, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { StatusBar } from 'react-native';
-import {
+/**import {
   Camera, useCameraDevice, useCodeScanner, useFrameProcessor,
 
+} from 'react-native-vision-camera'; **/
+ import {
+  Camera, useCameraDevice, useCodeScanner
 } from 'react-native-vision-camera';
 import GetLocation from 'react-native-get-location'
 import { promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
@@ -23,6 +26,22 @@ import ViewShot from 'react-native-view-shot';
 // import DeviceCountry from 'react-native-device-country';
 import LinearGradient from 'react-native-linear-gradient';
 // import translate from 'translate-google-api';
+import { useIsFocused } from '@react-navigation/native';
+// ... and ensure you import APISetting: 
+import { APISetting } from './config/config'; 
+import { useIsFocused } from '@react-navigation/native';
+
+   const camera = useRef(null);
+   const devices = useCameraDevice(value)
+   const screenShot = useRef();
+
+const isFocused = useIsFocused();
+const [cameraActive, setCameraActive] = useState(true);
+useEffect(() => { setCameraActive(isFocused); }, [isFocused]);
+
+const scanningRef = useRef(false);
+const abortCtrl = useRef(null);
+useEffect(() => () => { if (abortCtrl.current) abortCtrl.current.abort?.(); }, []);
 
 const db = connect()
 
@@ -301,8 +320,42 @@ export default function CameraView({ navigation }) {
     }
   };
 
+  /*** commented by Raghu
+  const codeScanner = useCodeScanner({
+  codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39','upc-a'],
+  onCodeScanned: (codes) => {
+    const first = codes?.[0];
+    if (!first?.value) return;
+    if (scanningRef.current) return;
+    scanningRef.current = true;
+
+    // reset data once
+    setproduct(''); setproductname(''); setdes(''); setregion('');
+    setImage(''); setcategory(''); setdatacode(first.value); setcodetype(first.type);
+
+    submit().finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
+  }
+}); ***/
+const codeScanner = useCodeScanner({
+    codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39','upc-a'],
+    onCodeScanned: (codes) => {
+      const first = codes?.[0];
+      if (!first?.value) return;
+      if (scanningRef.current) return;
+      scanningRef.current = true;
+
+      setproduct(''); setproductname(''); setdes(''); setregion('');
+      setImage(''); setcategory(''); setdatacode(first.value); setcodetype(first.type);
+
+      // optional: don’t auto-open links; confirm first if you want
+      // if (/^https?:/i.test(first.value)) { Linking.openURL(first.value); }
+
+      submit().finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
+    }
+  });
 
 
+/** Raghu commented out for potential memory leak
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13', 'ean-8', 'upc-e', 'code-128', 'code-39', 'upc-a'],
     onCodeScanned: (codes) => {
@@ -341,8 +394,80 @@ export default function CameraView({ navigation }) {
     }
 
   })
+******/
 
+const submit = async () => {
+  if (!datacode) return;
+  setmodalvisible(true);
+  setcamerview(false);
+  setCameraActive(false);
 
+  const payload = {
+    code: datacode,
+    encryptResponse: false,
+    codeType: code_type,
+    deviceType: OS,
+    deviceModel: devicebrand,
+    latitude, longitude,
+    deviceId: '', location: '', country: ''
+  };
+
+  if (abortCtrl.current) abortCtrl.current.abort();
+  abortCtrl.current = new AbortController();
+  const signal = abortCtrl.current.signal;
+
+  try {
+    const token = await AsyncStorage.getItem('access_token');
+    const url = `${APISetting.apiurl}/verify`;
+    let res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal
+    });
+
+    if (res.status === 401) {
+      const newToken = await tokensubmit();
+      if (!newToken) throw new Error('Token refresh failed');
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${newToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal
+      });
+    }
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    handleVerifyResult(json);
+  } catch (e) {
+    console.log('verify error', e);
+    setresponsefail(true);
+  } finally {
+    setmodalvisible(false);
+    setcamerview(true);
+    setCameraActive(isFocused);
+  }
+};
+
+function handleVerifyResult(res) {
+  if (res?.success === false) {
+    setresponsefail(true);
+    return;
+  }
+  setvisible(true);
+  saveHistoryData(res);
+  setCounter(prev => { const v = prev + 1; saveRewards(v); return v; });
+}
+/*** Commented by Raghu 
   const submit = async () => {
     if (submitController.current) {
       submitController.current.abort();
@@ -466,6 +591,69 @@ export default function CameraView({ navigation }) {
     // }
 
   }
+    ***/
+
+  const submit = async () => {
+    if (!datacode) return;
+    setmodalvisible(true);
+    setcamerview(false);
+    setCameraActive(false);
+
+    const payload = {
+      code: datacode,
+      encryptResponse: false,
+      codeType: code_type,
+      deviceType: OS,
+      deviceModel: devicebrand,
+      latitude, longitude,
+      deviceId: "", location: "", country: ""
+    };
+
+    if (abortCtrl.current) abortCtrl.current.abort();
+    abortCtrl.current = new AbortController();
+    const signal = abortCtrl.current.signal;
+
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const url = `${APISetting.apiurl}/upc/product/search`;
+      let res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal
+      });
+
+      if (res.status === 401) {
+        const newToken = await tokensubmit();
+        if (!newToken) throw new Error('Token refresh failed');
+        res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload),
+          signal
+        });
+      }
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      handleVerifyResult(json);
+    } catch (e) {
+      console.log('verify error', e);
+      setresponsefail(true);
+    } finally {
+      setmodalvisible(false);
+      setcamerview(true);
+      setCameraActive(isFocused);
+    }
+ };
 
   const saveRewards = async (updatedCounter) => {
     try {
@@ -908,15 +1096,13 @@ export default function CameraView({ navigation }) {
                 {camerview === true ? (
                   <>
                     <View style={StyleSheet.container}>
-                      <Camera
+                     <Camera
                         ref={camera}
                         style={[styles.absoluteFill, { width, height }]}
                         device={devices}
-                        isActive={true}
+                        isActive={cameraActive}
                         codeScanner={codeScanner}
                         torch={trochbutton}
-                      // photo={true}
-                      // frameProcessor={frameProcessor}
                       />
                     </View>
                     <View style={styles.trochConatiner}>

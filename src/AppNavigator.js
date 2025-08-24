@@ -14,13 +14,16 @@ import { useAppTheme } from './theme';
 
 
 const Stack = createNativeStackNavigator();
-
+const theme = useAppTheme();
 
 
 const AppNavigator = () => {
 
   return (
     <Stack.Navigator initialRouteName="Home" screenOptions={{
+      headerStyle: { backgroundColor: theme.colors.card },
+      headerTintColor: theme.colors.text,
+      contentStyle: { backgroundColor: theme.colors.background },
       headerTintColor: colors.blue,
     }}>
       <Stack.Screen name="Home" component={Login} options={{
