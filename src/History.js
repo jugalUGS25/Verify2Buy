@@ -130,7 +130,11 @@ export default function History({ navigation }) {
       navigation.navigate('Guide')
       setIsOpen(false)
     }
-    if (id === 5) {
+     if (id === 5) {
+       navigation.navigate('Privacy Policy')
+      setIsOpen(false)
+    }
+    if (id === 6) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
@@ -139,26 +143,24 @@ export default function History({ navigation }) {
 
 
   const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+       { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
+   { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const appicon = () => {

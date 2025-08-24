@@ -1,30 +1,30 @@
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CameraView from './CameraView';
+
 import RewardScreen from './RewardScreen';
 import History from './History';
 import Login from './Login';
 import Logout from './Logout';
 import { Text, View, StyleSheet } from 'react-native';
 import Guide from './Guide';
-import colors from './theme/colors';
-import { useAppTheme } from './theme';
+import CameraView from './CameraView';
+import Terms from './Terms';
+// import CameraView2 from './CameraView2';
+
+
 
 
 
 const Stack = createNativeStackNavigator();
-const theme = useAppTheme();
+
 
 
 const AppNavigator = () => {
 
   return (
     <Stack.Navigator initialRouteName="Home" screenOptions={{
-      headerStyle: { backgroundColor: theme.colors.card },
-      headerTintColor: theme.colors.text,
-      contentStyle: { backgroundColor: theme.colors.background },
-      headerTintColor: colors.blue,
+      headerTintColor: '#3078a4',
     }}>
       <Stack.Screen name="Home" component={Login} options={{
         headerTitle: () => (
@@ -63,6 +63,7 @@ const AppNavigator = () => {
         )
       }} />
       <Stack.Screen name="Logout" component={Logout} />
+      <Stack.Screen name="Privacy Policy" component={Terms} />
       <Stack.Screen name="Guide" component={Guide} options={{
         headerTitle: () => (
           <View>
@@ -81,7 +82,7 @@ export default AppNavigator;
 const styles = StyleSheet.create({
   Headertext: {
     fontFamily: 'Roboto',
-    color: colors.blue,
+    color: '#3078a4',
     fontSize: 20
   }
 })

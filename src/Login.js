@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Animated, Text,TouchableOpacity, Image, ScrollView, Dimensions} from 'react-native';
+import { StyleSheet, View, Animated, Text,TouchableOpacity, Image, ScrollView, Dimensions,Modal} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import logo from '../assets/logo.png'
 import MenuDrawer from 'react-native-side-drawer'
@@ -9,7 +9,8 @@ import one from '../assets/1.png'
 import two from '../assets/2.png'
 import three from '../assets/3.png'
 import four from '../assets/4.png'
-import colors from './theme/colors';
+import RNExitApp from 'react-native-exit-app';
+import FirstLauch from './FirstLauch';
 const { maxwidth, maxheight } = Dimensions.get('window');
 
 export default function Login({ navigation }) {
@@ -18,6 +19,7 @@ export default function Login({ navigation }) {
   const [isOpen, setIsOpen] = useState(false);
   const translateY = useRef(new Animated.Value(0)).current;
   const [india, setIndia] = useState('')
+  const [disclaimerPopup, setdisclaimerPopup] = useState(false)
 
   const country = () => {
     DeviceCountry.getCountryCode()
@@ -29,6 +31,10 @@ export default function Login({ navigation }) {
         console.log(e);
       });
 
+  }
+
+  const Disclaimer = ()=>{
+    setdisclaimerPopup(true)
   }
 
   // const handellocation = async () => {
@@ -88,6 +94,13 @@ export default function Login({ navigation }) {
     setIsOpen(false)
   }
 
+//   const handelAccept =()=>{
+//     setdisclaimerPopup(false)
+//   }
+// const handelDecline =()=>{
+//     setdisclaimerPopup(false)
+//      RNExitApp.exitApp();
+//   }
 
   const naviagte = (id) => {
     if (id === 1) {
@@ -107,6 +120,10 @@ export default function Login({ navigation }) {
       setIsOpen(false)
     }
     if (id === 5) {
+      navigation.navigate('Privacy Policy')
+      setIsOpen(false)
+    }
+     if (id === 6) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
@@ -117,27 +134,29 @@ export default function Login({ navigation }) {
   }
 
   const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: colors.blue },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: colors.blue },
-    { id: 3, label: 'History', icon: 'history', iconColor: colors.blue },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: colors.blue },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: colors.blue },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
+    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: colors.blue },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: colors.blue },
-    { id: 3, label: 'History', icon: 'history', iconColor: colors.blue },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: colors.blue },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: colors.blue },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
+    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: colors.blue },
-    { id: 2, icon: 'apple', iconColor: colors.blue },
-    { id: 3, icon: 'linkedin', iconColor: colors.blue },
-    { id: 4, icon: 'file-excel-box', iconColor: colors.blue },
-    { id: 5, icon: 'instagram', iconColor: colors.blue },
+    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
+    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
+    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
+    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   useEffect(() => {
@@ -173,6 +192,10 @@ export default function Login({ navigation }) {
     // handellocation()
     country()
   }, [])
+  // useEffect(() => {
+  //     Disclaimer()
+  // }, [])
+
 
   const navigationView = () => (
     <>
@@ -182,7 +205,7 @@ export default function Login({ navigation }) {
             <Icon
               name="close-circle"
               size={25}
-              color={colors.blue}
+              color="rgb(71, 162, 228)"
             />
           </TouchableOpacity>
         </View>
@@ -192,7 +215,7 @@ export default function Login({ navigation }) {
             source={logo}
           />
           <TouchableOpacity onPress={appicon}>
-            <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 5, paddingTop: 3 }}>Verify2Buy</Text>
+            <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
           </TouchableOpacity>
         </View>
         {india === "India" || "in" ? (
@@ -215,7 +238,7 @@ export default function Login({ navigation }) {
                     color={item.iconColor}
                     style={{ marginLeft: 10, marginTop: 5 }}
                   />
-                  <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -240,14 +263,14 @@ export default function Login({ navigation }) {
                     color={item.iconColor}
                     style={{ marginLeft: 10, marginTop: 5 }}
                   />
-                  <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
         )}
         <View style={styles.footerTextcontainer}>
-          <Text style={{ fontFamily: 'Roboto', color: colors.blue, fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
+          <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
         </View>
         <View style={styles.footerContainer}>
           {footermenuItems.map((item, index) => (
@@ -286,10 +309,11 @@ export default function Login({ navigation }) {
       overlay={true}
       opacity={0.4}
     >
-      <LinearGradient colors={[colors.blue, colors.green]} style={{ flex: 1, }} >
+      <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
         {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
         <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
         <View>
+           <FirstLauch/>
           <ScrollView style={styles.guidescrollView}>
             <View style={styles.menuopen}>
               <TouchableOpacity onPress={openDrawer}>
@@ -390,6 +414,49 @@ export default function Login({ navigation }) {
           {/* </ImageBackground>
       </SafeAreaView> */}
         </View>
+        {/* <Modal visible={disclaimerPopup} transparent={true}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View style={styles.gridview}>
+              <ScrollView style={styles.guidescrollView}>
+                <Text style={styles.fakeheader}>Disclaimer : </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap',marginTop:5 }}>
+                <Text style={styles.faketext}>
+                  The Verify2Buy application requires an active internet connection to scan and retrieve product information. 
+                  Standard data charges from your mobile network provider may apply.
+                  {"\n"}
+                  {"\n"}
+                  Please note that Verify2Buy relies on UPC (Universal Product Code) and GS1 standards for product verification. 
+                  Some products or retailers, such as IKEA and others who do not participate in the UPC or GS1 systems, may not be verifiable 
+                  through our application.
+                  {"\n"}
+                  {"\n"}
+                  Verify2Buy is a product verification facilitator only. Universum Global Solutions LLC does not sell, endorse, or 
+                  guarantee any products scanned through the app. Consumers are solely responsible for their purchasing decisions
+                   and assume all risks associated with the purchase of any product.
+                  {"\n"}
+                  {"\n"}
+                  While we strive to provide accurate and up-to-date product information, availability and accuracy of 
+                  data depend on external sources and manufacturer participation. Universum Global Solutions LLC is not 
+                  responsible for any inaccuracies, omissions, or missing product data.
+                  {"\n"}
+                  {"\n"}
+                  By using Verify2Buy, you acknowledge and accept these terms.
+                </Text>
+                </View>
+                 </ScrollView>
+              </View>
+              <View style={{flexDirection:'row',flexWrap:'wrap',gap:7, alignSelf: 'flex-end'}}>
+              <TouchableOpacity style={styles.errorbutton}>
+                <Text style={styles.errortext} onPress={handelAccept}>Accept</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.errorbutton}>
+                <Text style={styles.errortext} onPress={handelDecline}>Decline</Text>
+              </TouchableOpacity>
+            </View>
+            </View>
+          </View>
+        </Modal> */}
       </LinearGradient>
     </MenuDrawer>
   );
@@ -456,7 +523,8 @@ const styles = StyleSheet.create({
     gap: 3,
     borderBottomColor: "white",
     borderLeftColor: "white",
-    borderTopColor: colors.blue,
+    borderTopColor: 'rgb(71, 162, 228)',
+    //borderTopColor: '#b3b3b3',
     //borderRightColor:'white',
     borderWidth: 1,
   },
@@ -510,7 +578,7 @@ const styles = StyleSheet.create({
   footerTextcontainer: {
     // marginTop:70,
     borderBottomColor: "white",
-    borderTopColor: colors.blue,
+    borderTopColor: 'rgb(71, 162, 228)',
     borderWidth: 1,
     borderLeftColor: "white",
     width: 290,
@@ -660,5 +728,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 7,
 
+  },
+   centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    // opacity: 0.8 ,
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+    gridview: {
+    padding: 10,
+    maxHeight: 400,
+  },
+    fakeheader: {
+    fontSize: 19,
+    // color: '#04467e',
+    color:'red',
+    // flex:1,
+    flexWrap: "wrap"
+  },
+    faketext: {
+    fontSize: 17,
+    color: '#04467e',
+ flexShrink: 1,
+    width:300
+  },
+  errorbutton: {
+    padding: 10,
+    height: 40,
+    width: 100,
+    backgroundColor: '#7cb1e0ff',
+    borderRadius: 50,
+    // / borderColor:'rgb(253, 126, 20)',
+    flex: '1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+  },
+
+  errortext: {
+    color: 'white',
+    fontSize: 15,
+    fontFamily: 'Times New Roman", Times, serif',
+    fontWeight: 'bold'
   },
 })

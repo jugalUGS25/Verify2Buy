@@ -2,15 +2,9 @@ import React, { useEffect, useState, useRef} from 'react';
 import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, Image, ScrollView, Modal, FlatList, Dimensions, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { StatusBar } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet'; /** By Raghu */
-import { useRef, useMemo } from 'react';
-
-/**import {
+import {
   Camera, useCameraDevice, useCodeScanner, useFrameProcessor,
 
-} from 'react-native-vision-camera'; **/
- import {
-  Camera, useCameraDevice, useCodeScanner
 } from 'react-native-vision-camera';
 import GetLocation from 'react-native-get-location'
 import { promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
@@ -21,43 +15,19 @@ import closeimg from '../assets/closeicon.png';
 import Translatelanguages from './Translate';
 import logo from '../assets/logo.png'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
-import { Platform, BackHandler, Alert } from 'react-native';
+import RNExitApp from 'react-native-exit-app';
 import MenuDrawer from 'react-native-side-drawer'
 import DeviceInfo, { useIsEmulator } from 'react-native-device-info'
-import { connect, disconnect } from './db'
+import { openDatabase } from 'react-native-sqlite-storage'
 import ViewShot from 'react-native-view-shot';
 // import DeviceCountry from 'react-native-device-country';
 import LinearGradient from 'react-native-linear-gradient';
 // import translate from 'translate-google-api';
-import { useIsFocused } from '@react-navigation/native';
-// ... and ensure you import APISetting: 
-import { APISetting } from './config/config'; 
-import { useIsFocused } from '@react-navigation/native';
-import { useAppTheme } from './theme';
+import APISetting from './config/config'
 
-/** Added by Raghu */
-const camera = useRef(null);
-const devices = useCameraDevice(value)
-const screenShot = useRef();
-const theme = useAppTheme();
-/*** ends here  */
-
-const isFocused = useIsFocused();
-const [cameraActive, setCameraActive] = useState(true);
-useEffect(() => { setCameraActive(isFocused); }, [isFocused]);
-
-const scanningRef = useRef(false);
-const abortCtrl = useRef(null);
-useEffect(() => () => { if (abortCtrl.current) abortCtrl.current.abort?.(); }, []);
-
-const db = connect()
+var db = openDatabase({ name: 'r2a.db' })
 
 const { maxwidth, maxheight } = Dimensions.get('window');
-
-const sheetRef = useRef(null);
-const snapPoints = useMemo(() => ['25%', '60%'], []);
-const [productData, setProductData] = useState(null);
-
 
 export default function CameraView({ navigation }) {
   // const translate = require("translate-google-api");
@@ -99,8 +69,6 @@ export default function CameraView({ navigation }) {
   const camera = useRef(null);
   const devices = useCameraDevice(value)
   const screenShot = useRef();
-  const tokenController = useRef(null);
-  const submitController = useRef(null);
 
 
 
@@ -115,9 +83,9 @@ export default function CameraView({ navigation }) {
   // }
 
   const handeltakeSCreenshot = () => {
-    screenShot.current.capture().then(uri => {
-      console.log('URI:', uri);
-    });
+    // screenShot.current.capture().then(uri => {
+    //   console.log('URI:', uri);
+    // });
     // setpopupdialog(true)
     // setTimeout(() => {
     //   setpopupdialog(false)
@@ -185,13 +153,7 @@ export default function CameraView({ navigation }) {
   const networkError = async () => {
     setnetworkerror(false)
     await AsyncStorage.removeItem('access_token',);
-   /**  RNExitApp.exitApp(); **/
-    if (Platform.OS === 'android') {
-     // either lib or native BackHandler
-     BackHandler.exitApp();
-    } else {
-     Alert.alert('Network error', 'Please close the app and reopen.');
-    }
+    RNExitApp.exitApp();
   }
 
   const closenetworkslow = async () => {
@@ -271,11 +233,6 @@ export default function CameraView({ navigation }) {
 
 
   const tokensubmit = async () => {
-    if (tokenController.current) {
-      tokenController.current.abort();
-    }
-    const controller = new AbortController();
-    tokenController.current = controller;
     let authenticatedata = {
       method: 'POST',
       credentials: 'same-origin',
@@ -287,12 +244,13 @@ export default function CameraView({ navigation }) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
-      },
-      signal: controller.signal
+      }
+
     }
 
     try {
-      const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/token", authenticatedata);
+      // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/token", authenticatedata);
+       const response = await fetch("https://universumgs.com/anticounterfeit/api/token", authenticatedata);
       const res = await response.json();
       if (res) {
         await AsyncStorage.setItem(
@@ -338,42 +296,8 @@ export default function CameraView({ navigation }) {
     }
   };
 
-  /*** commented by Raghu
-  const codeScanner = useCodeScanner({
-  codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39','upc-a'],
-  onCodeScanned: (codes) => {
-    const first = codes?.[0];
-    if (!first?.value) return;
-    if (scanningRef.current) return;
-    scanningRef.current = true;
-
-    // reset data once
-    setproduct(''); setproductname(''); setdes(''); setregion('');
-    setImage(''); setcategory(''); setdatacode(first.value); setcodetype(first.type);
-
-    submit().finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
-  }
-}); ***/
-const codeScanner = useCodeScanner({
-    codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39','upc-a'],
-    onCodeScanned: (codes) => {
-      const first = codes?.[0];
-      if (!first?.value) return;
-      if (scanningRef.current) return;
-      scanningRef.current = true;
-
-      setproduct(''); setproductname(''); setdes(''); setregion('');
-      setImage(''); setcategory(''); setdatacode(first.value); setcodetype(first.type);
-
-      // optional: don’t auto-open links; confirm first if you want
-      // if (/^https?:/i.test(first.value)) { Linking.openURL(first.value); }
-
-      submit().finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
-    }
-  });
 
 
-/** Raghu commented out for potential memory leak
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13', 'ean-8', 'upc-e', 'code-128', 'code-39', 'upc-a'],
     onCodeScanned: (codes) => {
@@ -412,103 +336,9 @@ const codeScanner = useCodeScanner({
     }
 
   })
-******/
 
-const submit = async () => {
-  if (!datacode) return;
-  setmodalvisible(true);
-  setcamerview(false);
-  setCameraActive(false);
 
-  const payload = {
-    code: datacode,
-    encryptResponse: false,
-    codeType: code_type,
-    deviceType: OS,
-    deviceModel: devicebrand,
-    latitude, longitude,
-    deviceId: '', location: '', country: ''
-  };
-
-  if (abortCtrl.current) abortCtrl.current.abort();
-  abortCtrl.current = new AbortController();
-  const signal = abortCtrl.current.signal;
-
-  try {
-    const token = await AsyncStorage.getItem('access_token');
-    const url = `${APISetting.apiurl}/verify`;
-    let res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload),
-      signal
-    });
-
-    if (res.status === 401) {
-      const newToken = await tokensubmit();
-      if (!newToken) throw new Error('Token refresh failed');
-      res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${newToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload),
-        signal
-      });
-    }
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    handleVerifyResult(json);
-  } catch (e) {
-    console.log('verify error', e);
-    setresponsefail(true);
-  } finally {
-
-/*** Added by Raghu
- *  {productData && (
-  <BottomSheet ref={sheetRef} index={-1} snapPoints={snapPoints}>
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 18, fontWeight: '700' }}>✅ Verified Product</Text>
-      <Text style={{ fontSize: 16 }}>{productData.name}</Text>
-      <Image source={{ uri: productData.image }} style={{ width: '100%', height: 180, borderRadius: 12 }} />
-      <Text style={{ marginTop: 8 }}>{productData.description}</Text>
-      <Text style={{ marginTop: 4, color: 'green' }}>🌍 Origin: {productData.origin}</Text>
-      {/* Add YES/NO buttons or CTA here */}
-    </View>
-  </BottomSheet>
-
- * 
- */
-
-    setmodalvisible(false);
-    setcamerview(true);
-    setCameraActive(isFocused);
-  }
-};
-
-function handleVerifyResult(res) {
-  if (res?.success === false) {
-    setresponsefail(true);
-    return;
-  }
-  setvisible(true);
-  saveHistoryData(res);
-  setCounter(prev => { const v = prev + 1; saveRewards(v); return v; });
-}
-/*** Commented by Raghu 
   const submit = async () => {
-    if (submitController.current) {
-      submitController.current.abort();
-    }
-    const controller = new AbortController();
-    submitController.current = controller;
     const token = await AsyncStorage.getItem('access_token');
     setmodalvisible(true)
     if (datacode !== "") {
@@ -533,13 +363,23 @@ function handleVerifyResult(res) {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        },
-        signal: controller.signal,
+        }
       };
       //console.log('datastored',data)
 
+      // const controller = new AbortController();
+      // const timeoutId = setTimeout(() => controller.abort(),  15000);
+      // console.log('timeoutId',timeoutId)
+      //  const url = "/upc/product/search"
+      //  const fullapiurl = APISetting.apiurl+url
       try {
-        const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", data);
+        // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", {
+        //   ...data,
+        //   signal: controller.signal, 
+        // });
+          const response = await fetch("https://universumgs.com/anticounterfeit/api/upc/product/search", data);
+
+        // clearTimeout(timeoutId);
 
         if (response.status === 401) {
           const newToken = await tokensubmit();
@@ -589,6 +429,7 @@ function handleVerifyResult(res) {
           }
           if (res.product.imageUrl !== "" && res.product.imageUrl !== null) {
             setImage(res.product.imageUrl);
+            //setImage('');
           }
           else {
             setImage('');
@@ -626,69 +467,6 @@ function handleVerifyResult(res) {
     // }
 
   }
-    ***/
-
-  const submit = async () => {
-    if (!datacode) return;
-    setmodalvisible(true);
-    setcamerview(false);
-    setCameraActive(false);
-
-    const payload = {
-      code: datacode,
-      encryptResponse: false,
-      codeType: code_type,
-      deviceType: OS,
-      deviceModel: devicebrand,
-      latitude, longitude,
-      deviceId: "", location: "", country: ""
-    };
-
-    if (abortCtrl.current) abortCtrl.current.abort();
-    abortCtrl.current = new AbortController();
-    const signal = abortCtrl.current.signal;
-
-    try {
-      const token = await AsyncStorage.getItem('access_token');
-      const url = `${APISetting.apiurl}/upc/product/search`;
-      let res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload),
-        signal
-      });
-
-      if (res.status === 401) {
-        const newToken = await tokensubmit();
-        if (!newToken) throw new Error('Token refresh failed');
-        res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${newToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload),
-          signal
-        });
-      }
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      handleVerifyResult(json);
-    } catch (e) {
-      console.log('verify error', e);
-      setresponsefail(true);
-    } finally {
-      setmodalvisible(false);
-      setcamerview(true);
-      setCameraActive(isFocused);
-    }
- };
 
   const saveRewards = async (updatedCounter) => {
     try {
@@ -862,7 +640,11 @@ function handleVerifyResult(res) {
       navigation.navigate('Guide')
       setIsOpen(false)
     }
-    if (id === 5) {
+        if (id === 5) {
+       navigation.navigate('Privacy Policy')
+      setIsOpen(false)
+    }
+    if (id === 6) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
@@ -872,18 +654,21 @@ function handleVerifyResult(res) {
 
 
   const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+   { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
     // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+  { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const footermenuItems = [
@@ -906,7 +691,7 @@ function handleVerifyResult(res) {
             <Icon
               name="close-circle"
               size={25}
-              color={theme.colors.primary}
+              color="rgb(71, 162, 228)"
             />
           </TouchableOpacity>
         </View>
@@ -1010,19 +795,9 @@ function handleVerifyResult(res) {
   }
 
   useEffect(() => {
-    return () => {
-      disconnect()
-    }
-  }, [])
-
-  useEffect(() => {
     tokensubmit()
     handellocation()
     // country()
-    return () => {
-      tokenController.current?.abort();
-      submitController.current?.abort();
-    };
   }, [])
 
 
@@ -1104,7 +879,7 @@ function handleVerifyResult(res) {
         opacity={0.4}
       >
         {/* <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-       <LinearGradient colors={[theme.colors.primary, theme.colors.primaryPressed]} style={{ flex: 1 }}>
+        <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
           {/* <ScrollView> */}
           <SafeAreaView style={{ flex: 1, }}>
             <SafeAreaProvider>
@@ -1131,23 +906,25 @@ function handleVerifyResult(res) {
                 {camerview === true ? (
                   <>
                     <View style={StyleSheet.container}>
-                     <Camera
+                      <Camera
                         ref={camera}
                         style={[styles.absoluteFill, { width, height }]}
                         device={devices}
-                        isActive={cameraActive}
+                        isActive={true}
                         codeScanner={codeScanner}
                         torch={trochbutton}
+                      // photo={true}
+                      // frameProcessor={frameProcessor}
                       />
                     </View>
                     <View style={styles.trochConatiner}>
                       {trochicon === true ? (
                         <TouchableOpacity onPress={trochon}>
-                          <Icon name='flashlight-off' size={25} color={theme.colors.primary} />
+                          <Icon name='flashlight-off' size={25} color="rgb(71, 162, 228)" />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity onPress={trochoff}>
-                          <Icon name='flashlight' size={25} color={theme.colors.primary} />
+                          <Icon name='flashlight' size={25} color="rgb(71, 162, 228)" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -1156,7 +933,7 @@ function handleVerifyResult(res) {
                         <Icon
                           name="menu-open"
                           size={27}
-                          color={theme.colors.primary}
+                          color="rgb(71, 162, 228)"
                         />
                       </TouchableOpacity>
                     </View>
@@ -1192,25 +969,25 @@ function handleVerifyResult(res) {
                         <Icon
                           name="google-translate"
                           size={25}
-                          color={theme.colors.primary}
+                          color="rgb(71, 162, 228)"
                         />
                       </TouchableOpacity> */}
                         <TouchableOpacity onPress={closeicon} style={styles.closeicon} >
                           <Icon
                             name="close-circle"
                             size={25}
-                            color={theme.colors.primary}
+                            color="rgb(71, 162, 228)"
                           />
                         </TouchableOpacity>
                       </View>
-                      <ViewShot
+                      {/* <ViewShot
                         ref={screenShot}
                         options={{
                           fileName: "img",
                           format: 'jpg',
                           quality: 1,
                           result: 'tmpfile'
-                        }}>
+                        }}> */}
                         <View style={{ marginTop: 10 }}>
                           <Text style={styles.productheading}>Product Details :</Text>
                           <Text style={styles.headgrid}>Brand: </Text>
@@ -1273,6 +1050,8 @@ function handleVerifyResult(res) {
                             <Text style={[styles.textgridfail, { fontSize }]}>No Image Found</Text>
                           )}
                         </View>
+                        {imageurl !== "" ? (
+                        <>
                         <Text style={{ fontSize: 14, color: 'black', fontWeight: 'bold', width: 250, flexWrap: 'wrap', marginTop: 5, }}>Does the scanned image match the item you’re going to purchase?</Text>
                         <View style={styles.row}>
                           <TouchableOpacity onPress={handeltakeSCreenshot}>
@@ -1298,7 +1077,11 @@ function handleVerifyResult(res) {
                           {/* <Button title='No' color="#faa19b" onPress={handeltakeSCreenshot}/>
                       <Button title='Yes' color="#caeec2" onPress={popupsucesss} /> */}
                         </View>
-                      </ViewShot>
+                        </>
+                        ):(
+                          <></>
+                        )}
+                      {/* </ViewShot> */}
                       {/* <TouchableOpacity style={styles.productclosebutton} onPress={close}>
               <Text style={styles.closetext}>CLOSE</Text>
             </TouchableOpacity>  */}
@@ -1415,7 +1198,7 @@ function handleVerifyResult(res) {
               <View style={styles.PopuploadingcenteredView}>
                 <View style={styles.PopuploadingView}>
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: theme.colors.primary }}>Searching...<Icon size={25} color="#04467e" name="barcode-scan" /></Text>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: "#04467e" }}>Searching...<Icon size={25} color="#04467e" name="barcode-scan" /></Text>
                   </View>
                 </View>
               </View>
@@ -1430,7 +1213,7 @@ function handleVerifyResult(res) {
               <View style={styles.PopuploadingcenteredView}>
                 <View style={styles.PopuploadingView}>
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.colors.primary }}><Icon size={30} color="#04467e" name="camera" /> Loading...</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: "#04467e" }}><Icon size={30} color="#04467e" name="camera" /> Loading...</Text>
                   </View>
                 </View>
               </View>
@@ -1465,8 +1248,8 @@ function handleVerifyResult(res) {
                 </View>
               </View>
             </Modal>
-            <View>
-            </View>
+            {/* <View>
+            </View> */}
           </SafeAreaView>
           {/* </ScrollView> */}
           {/* </ImageBackground> */}

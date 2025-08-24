@@ -107,6 +107,10 @@ export default function Guide({ navigation }) {
       setIsOpen(false)
     }
     if (id === 5) {
+       navigation.navigate('Privacy Policy')
+      setIsOpen(false)
+    }
+    if (id === 6) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
@@ -121,14 +125,16 @@ export default function Guide({ navigation }) {
     // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
+     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
+    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
   ];
 
   const footermenuItems = [
