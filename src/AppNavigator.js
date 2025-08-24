@@ -9,6 +9,8 @@ import Logout from './Logout';
 import { Text, View, StyleSheet } from 'react-native';
 import Guide from './Guide';
 import colors from './theme/colors';
+import { useAppTheme } from './theme';
+
 
 
 const Stack = createNativeStackNavigator();
