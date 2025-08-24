@@ -18,7 +18,7 @@ import closeimg from '../assets/closeicon.png';
 import Translatelanguages from './Translate';
 import logo from '../assets/logo.png'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
-import RNExitApp from 'react-native-exit-app';
+import { Platform, BackHandler, Alert } from 'react-native';
 import MenuDrawer from 'react-native-side-drawer'
 import DeviceInfo, { useIsEmulator } from 'react-native-device-info'
 import { connect, disconnect } from './db'
@@ -30,10 +30,12 @@ import { useIsFocused } from '@react-navigation/native';
 // ... and ensure you import APISetting: 
 import { APISetting } from './config/config'; 
 import { useIsFocused } from '@react-navigation/native';
+import { useAppTheme } from './theme';
 
-   const camera = useRef(null);
-   const devices = useCameraDevice(value)
-   const screenShot = useRef();
+const camera = useRef(null);
+const devices = useCameraDevice(value)
+const screenShot = useRef();
+const theme = useAppTheme();
 
 const isFocused = useIsFocused();
 const [cameraActive, setCameraActive] = useState(true);
@@ -173,7 +175,13 @@ export default function CameraView({ navigation }) {
   const networkError = async () => {
     setnetworkerror(false)
     await AsyncStorage.removeItem('access_token',);
-    RNExitApp.exitApp();
+   /**  RNExitApp.exitApp(); **/
+    if (Platform.OS === 'android') {
+     // either lib or native BackHandler
+     BackHandler.exitApp();
+    } else {
+     Alert.alert('Network error', 'Please close the app and reopen.');
+    }
   }
 
   const closenetworkslow = async () => {
@@ -871,7 +879,7 @@ function handleVerifyResult(res) {
             <Icon
               name="close-circle"
               size={25}
-              color="rgb(71, 162, 228)"
+              color={theme.colors.primary}
             />
           </TouchableOpacity>
         </View>
@@ -1069,7 +1077,7 @@ function handleVerifyResult(res) {
         opacity={0.4}
       >
         {/* <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-        <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
+       <LinearGradient colors={[theme.colors.primary, theme.colors.primaryPressed]} style={{ flex: 1 }}>
           {/* <ScrollView> */}
           <SafeAreaView style={{ flex: 1, }}>
             <SafeAreaProvider>
@@ -1108,11 +1116,11 @@ function handleVerifyResult(res) {
                     <View style={styles.trochConatiner}>
                       {trochicon === true ? (
                         <TouchableOpacity onPress={trochon}>
-                          <Icon name='flashlight-off' size={25} color="rgb(71, 162, 228)" />
+                          <Icon name='flashlight-off' size={25} color={theme.colors.primary} />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity onPress={trochoff}>
-                          <Icon name='flashlight' size={25} color="rgb(71, 162, 228)" />
+                          <Icon name='flashlight' size={25} color={theme.colors.primary} />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -1121,7 +1129,7 @@ function handleVerifyResult(res) {
                         <Icon
                           name="menu-open"
                           size={27}
-                          color="rgb(71, 162, 228)"
+                          color={theme.colors.primary}
                         />
                       </TouchableOpacity>
                     </View>
@@ -1157,14 +1165,14 @@ function handleVerifyResult(res) {
                         <Icon
                           name="google-translate"
                           size={25}
-                          color="rgb(71, 162, 228)"
+                          color={theme.colors.primary}
                         />
                       </TouchableOpacity> */}
                         <TouchableOpacity onPress={closeicon} style={styles.closeicon} >
                           <Icon
                             name="close-circle"
                             size={25}
-                            color="rgb(71, 162, 228)"
+                            color={theme.colors.primary}
                           />
                         </TouchableOpacity>
                       </View>
@@ -1380,7 +1388,7 @@ function handleVerifyResult(res) {
               <View style={styles.PopuploadingcenteredView}>
                 <View style={styles.PopuploadingView}>
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: "#04467e" }}>Searching...<Icon size={25} color="#04467e" name="barcode-scan" /></Text>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: theme.colors.primary }}>Searching...<Icon size={25} color="#04467e" name="barcode-scan" /></Text>
                   </View>
                 </View>
               </View>
@@ -1395,7 +1403,7 @@ function handleVerifyResult(res) {
               <View style={styles.PopuploadingcenteredView}>
                 <View style={styles.PopuploadingView}>
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: "#04467e" }}><Icon size={30} color="#04467e" name="camera" /> Loading...</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.colors.primary }}><Icon size={30} color="#04467e" name="camera" /> Loading...</Text>
                   </View>
                 </View>
               </View>
