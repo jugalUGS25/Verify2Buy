@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef} from 'react';
 import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, Image, ScrollView, Modal, FlatList, Dimensions, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { StatusBar } from 'react-native';
+import BottomSheet from '@gorhom/bottom-sheet'; /** By Raghu */
+import { useRef, useMemo } from 'react';
+
 /**import {
   Camera, useCameraDevice, useCodeScanner, useFrameProcessor,
 
@@ -32,10 +35,12 @@ import { APISetting } from './config/config';
 import { useIsFocused } from '@react-navigation/native';
 import { useAppTheme } from './theme';
 
+/** Added by Raghu */
 const camera = useRef(null);
 const devices = useCameraDevice(value)
 const screenShot = useRef();
 const theme = useAppTheme();
+/*** ends here  */
 
 const isFocused = useIsFocused();
 const [cameraActive, setCameraActive] = useState(true);
@@ -48,6 +53,11 @@ useEffect(() => () => { if (abortCtrl.current) abortCtrl.current.abort?.(); }, [
 const db = connect()
 
 const { maxwidth, maxheight } = Dimensions.get('window');
+
+const sheetRef = useRef(null);
+const snapPoints = useMemo(() => ['25%', '60%'], []);
+const [productData, setProductData] = useState(null);
+
 
 export default function CameraView({ navigation }) {
   // const translate = require("translate-google-api");
@@ -460,6 +470,23 @@ const submit = async () => {
     console.log('verify error', e);
     setresponsefail(true);
   } finally {
+
+/*** Added by Raghu
+ *  {productData && (
+  <BottomSheet ref={sheetRef} index={-1} snapPoints={snapPoints}>
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 18, fontWeight: '700' }}>✅ Verified Product</Text>
+      <Text style={{ fontSize: 16 }}>{productData.name}</Text>
+      <Image source={{ uri: productData.image }} style={{ width: '100%', height: 180, borderRadius: 12 }} />
+      <Text style={{ marginTop: 8 }}>{productData.description}</Text>
+      <Text style={{ marginTop: 4, color: 'green' }}>🌍 Origin: {productData.origin}</Text>
+      {/* Add YES/NO buttons or CTA here */}
+    </View>
+  </BottomSheet>
+
+ * 
+ */
+
     setmodalvisible(false);
     setcamerview(true);
     setCameraActive(isFocused);
