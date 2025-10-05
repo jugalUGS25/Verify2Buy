@@ -1,27 +1,60 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Animated, Text,TouchableOpacity, Image, ScrollView, Dimensions,Modal} from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import { StyleSheet, View, Animated, Text, TouchableOpacity, Image, ScrollView} from 'react-native';
+import { useAppTheme } from './theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import logo from '../assets/logo.png'
-import MenuDrawer from 'react-native-side-drawer'
-import DeviceCountry from 'react-native-device-country';
+// import Icon from 'react-native-vector-icons/Feather'; // Or use Lottie for animated icons
 import LinearGradient from 'react-native-linear-gradient';
-import one from '../assets/1.png'
-import two from '../assets/2.png'
-import three from '../assets/3.png'
-import four from '../assets/4.png'
-import RNExitApp from 'react-native-exit-app';
-import FirstLauch from './FirstLauch';
-const { maxwidth, maxheight } = Dimensions.get('window');
+import MenuDrawer from 'react-native-side-drawer'
+import ThemeContext from './themes/ThemeContext';
+import DeviceCountry from 'react-native-device-country';
+// const { maxwidth, maxheight } = Dimensions.get('window');
 
-export default function Login({ navigation }) {
-  const [hoveredIndex, setHoveredIndex] = useState(null)
-  const [orientation, setOrientation] = useState('portrait');
-  const [isOpen, setIsOpen] = useState(false);
-  const translateY = useRef(new Animated.Value(0)).current;
-  const [india, setIndia] = useState('')
-  const [disclaimerPopup, setdisclaimerPopup] = useState(false)
+const Login = ({ navigation }) => {
+  const theme = useAppTheme();
 
-  const country = () => {
+  const benefits = [
+    {
+      icon: 'search',
+      title: 'Quick Scanning',
+      description: 'Check product authenticity in seconds.',
+      image: require('../assets/1.png'),
+    },
+    {
+      icon: 'check-circle',
+      title: 'Genuine Products',
+      description: 'Confirm items are real, and buy with confidence.',
+       image: require('../assets/2.png'),
+    },
+    {
+      icon: 'alert-triangle',
+      title: 'Counterfeit Protection',
+      description: 'Avoid harmful food items.',
+       image: require('../assets/3.png'),
+    },
+    {
+      icon: 'shield',
+      title: 'Build Trust',
+      description: 'Shop confidently with new brands.',
+       image: require('../assets/4.png'),
+    },
+  ];
+
+   const [hoveredIndex, setHoveredIndex] = useState(null)
+    //const [orientation, setOrientation] = useState('portrait');
+    const [isOpen, setIsOpen] = useState(false);
+     const [india, setIndia] = useState('')
+    // const [IsDarkmode,setIsDarkMode]=useContext(ThemeContext)
+    const { isDarkMode,toggleDarkMode } = useContext(ThemeContext);
+    
+    // const handelchangemode =()=>{
+    //      setIsDarkMode('dark')
+    //      navigation.navigate('')
+
+    // }
+
+
+      const country = () => {
     DeviceCountry.getCountryCode()
       .then((result) => {
         setIndia(result.code)
@@ -32,75 +65,24 @@ export default function Login({ navigation }) {
       });
 
   }
+ 
 
-  const Disclaimer = ()=>{
-    setdisclaimerPopup(true)
-  }
+    const menucontent = () => {
+        return (
+            <View style={styles.sidemenu}>
+                {navigationView()}
+            </View>
+        )
+    }
 
-  // const handellocation = async () => {
+    const openDrawer = () => {
+        setIsOpen(true)
+    }
 
-  //   GetLocation.getCurrentPosition({
-  //     enableHighAccuracy: true,
-  //     // timeout: 60000,
-  //   })
-  //     .then(location => {
-  //       country(location.latitude,location.longitude)
-  //       console.log('loaction',location)
-  //     })
-  //     .catch(error => {
-  //       const { code, message } = error;
-  //       console.warn(code, message);
-  //     })
+    const closeDrawer = () => {
+        setIsOpen(false)
+    }
 
-  // }
-
-  //   const country = async (latitude,longitude) => {
-  //     try { 
-  //       const response = await fetch(
-  //         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-  //         {
-  //           method: 'GET',
-  //           headers: {
-  //             'User-Agent': 'com.r2aqrapp/1.0',
-  //             'Accept': 'application/json',
-  //           },
-  //         }
-
-  //       );
-
-  //      if (response) {
-  //        const data = await response.json();
-  //         console.log('res',data.address.country)
-  //         setIndia(data.address.country)
-  //       }
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   };
-
-  const menucontent = () => {
-    return (
-      <View style={styles.sidemenu}>
-        {navigationView()}
-      </View>
-    )
-  }
-
-  const openDrawer = () => {
-    setIsOpen(true)
-  }
-
-  const closeDrawer = () => {
-    setIsOpen(false)
-  }
-
-//   const handelAccept =()=>{
-//     setdisclaimerPopup(false)
-//   }
-// const handelDecline =()=>{
-//     setdisclaimerPopup(false)
-//      RNExitApp.exitApp();
-//   }
 
   const naviagte = (id) => {
     if (id === 1) {
@@ -124,181 +106,160 @@ export default function Login({ navigation }) {
       setIsOpen(false)
     }
      if (id === 6) {
+      navigation.navigate('Settings')
+      setIsOpen(false)
+    }
+     if (id === 7) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
 
   }
-  const appicon = () => {
-    navigation.navigate('Home')
-  }
+    const appicon = () => {
+        navigation.navigate('Home')
+    }
 
-  const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
-    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+   const menuItems = [
+     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
-    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
-  const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
+
+
+   const footermenuItems = [
+    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateY, {
-          toValue: 170, // Moves the scanning line down
-          duration: 2000, // Adjust speed
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateY, {
-          toValue: 0, // Moves back up
-          duration: 0, // Instant reset
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [translateY])
-  useEffect(() => {
-    const updateOrientation = () => {
-      const { width, height } = Dimensions.get('window');
-      setOrientation(width > height ? 'landscape' : 'portrait');
-    };
-
-    const subscription = Dimensions.addEventListener('change', updateOrientation);
-    updateOrientation();
-
-    return () => subscription?.remove();
-  }, []);
 
 
-  useEffect(() => {
-    // handellocation()
-    country()
-  }, [])
-  // useEffect(() => {
-  //     Disclaimer()
-  // }, [])
-
-
-  const navigationView = () => (
-    <>
-      <ScrollView>
-        <View style={styles.close}>
-          <TouchableOpacity onPress={closeDrawer}>
-            <Icon
-              name="close-circle"
-              size={25}
-              color="rgb(71, 162, 228)"
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.sideimgcontainer}>
-          <Image
-            style={styles.sidetinyLogo}
-            source={logo}
-          />
-          <TouchableOpacity onPress={appicon}>
-            <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
-          </TouchableOpacity>
-        </View>
-        {india === "India" || "in" ? (
-          <View style={styles.menncontainer}>
-            {menuItemsIndia.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagte(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.menncontainer}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagte(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        <View style={styles.footerTextcontainer}>
-          <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
-        </View>
-        <View style={styles.footerContainer}>
-          {footermenuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.footerbar}
-            // style={[
-            //   styles.menubar,
-            //   hoveredIndex === index && styles.menubarHovered, 
-            // ]}
-            // onPressIn={() => setHoveredIndex(index)}
-            // onPressOut={() => setHoveredIndex(null)}
-            //onPress={()=>naviagtion(index)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      const navigationView = () => (
+        <>
+          <ScrollView>
+            <View style={styles.close}>
+              <TouchableOpacity onPress={closeDrawer}>
                 <Icon
-                  name={item.icon}
+                  name="close-circle"
                   size={25}
-                  color={item.iconColor}
-                  style={{ marginLeft: 10, marginTop: 5 }}
+                  color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
                 />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.sideimgcontainer}>
+              <Image
+                style={styles.sidetinyLogo}
+                source={!isDarkMode ?  logo : logo}
+              />
+              <TouchableOpacity onPress={appicon}>
+                <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
+              </TouchableOpacity>
+            </View>
+            {india === "India" || "in" ? (
+              <View style={styles.menncontainer}>
+                {menuItemsIndia.map((item, index) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.menubar,
+                      hoveredIndex === index && styles.menubarHovered,
+                    ]}
+                    onPressIn={() => setHoveredIndex(index)}
+                    onPressOut={() => setHoveredIndex(null)}
+                    onPress={() => naviagte(item.id)}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Icon
+                        name={item.icon}
+                        size={25}
+                        color={item.iconColor}
+                        style={{ marginLeft: 10, marginTop: 5 }}
+                      />
+                      <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </>
-  );
+            ) : (
+              <View style={styles.menncontainer}>
+                {menuItems.map((item, index) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.menubar,
+                      hoveredIndex === index && styles.menubarHovered,
+                    ]}
+                    onPressIn={() => setHoveredIndex(index)}
+                    onPressOut={() => setHoveredIndex(null)}
+                    onPress={() => naviagte(item.id)}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Icon
+                        name={item.icon}
+                        size={25}
+                        color={item.iconColor}
+                        style={{ marginLeft: 10, marginTop: 5 }}
+                      />
+                      <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            <View style={styles.footerTextcontainer}>
+              <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15,paddingTop:10}}>Follow us on</Text>
+            </View>
+            <View style={styles.footerContainer}>
+              {footermenuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.footerbar}
+                // style={[
+                //   styles.menubar,
+                //   hoveredIndex === index && styles.menubarHovered, 
+                // ]}
+                // onPressIn={() => setHoveredIndex(index)}
+                // onPressOut={() => setHoveredIndex(null)}
+                //onPress={()=>naviagtion(index)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Icon
+                      name={item.icon}
+                      size={25}
+                      color={item.iconColor}
+                      style={{ marginLeft: 10, marginTop: 5 }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </>
+      );
+
+     useEffect(() => {
+       // handellocation()
+       country()
+     }, [])
+
+
   return (
     <MenuDrawer
       open={isOpen}
@@ -308,482 +269,211 @@ export default function Login({ navigation }) {
       animationTime={250}
       overlay={true}
       opacity={0.4}
-    >
-      <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
-        {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
-        <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-        <View>
-           <FirstLauch/>
-          <ScrollView style={styles.guidescrollView}>
-            <View style={styles.menuopen}>
-              <TouchableOpacity onPress={openDrawer}>
-                <Icon
-                  name="menu-open"
-                  size={25}
-                  color="#FFFF"
-                />
-              </TouchableOpacity>
-            </View>
-            {orientation !== 'landscape' ? (
-              <>
-                <View style={styles.guidecontainer}>
-                  <View style={styles.textConatiner}>
-                    <Text style={{ color: 'white', fontSize: 17, fontWeight: 'bold', textAlign: 'center' }}>Why We Need Verify2Buy App</Text>
-                    <View style={styles.colorbackground}>
+    >       
+  {/* <LinearGradient  colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} > */}
+    {/* <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>  */}
+     <View style={styles.menuopen}>
+          <TouchableOpacity onPress={openDrawer}>
+            <Icon
+              name="menu-open"
+              size={25}
+              color="#FFFF"
+            />
+          </TouchableOpacity>
+      </View>
+     <ScrollView style={styles.container}> 
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: theme.colors.primary }]}>Welcome to Verify2Buy</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.text }]}>
+          Scan. Trust. Buy with Confidence.
+        </Text>
+      </View>
 
-                      <View style={styles.rowitems}>
-                        <Image
-                          source={one}
-                          style={styles.columnimage}
-                        />
-                        <Text style={styles.textrow}>Quick and easy scanning to check product authenticity in real-time</Text>
-                      </View>
-                    </View>
-                    <View style={styles.colorbackground}>
-                      <View style={styles.rowitems4}>
-                        <Text style={styles.textrowodd}>Confirms that the scanned product is genuine and not a fake</Text>
-                        <Image
-                          source={two}
-                          style={styles.columnimage4}
-                        />
-                      </View>
-                    </View>
-                    <View style={styles.colorbackground}>
-                      <View style={styles.rowitems3}>
-                        <Image
-                          source={three}
-                          style={styles.columnimage}
-                        />
-                        <Text style={styles.textrow}>Helps prevent the purchase of counterfeit food items that may be harmful</Text>
-                      </View>
-                    </View>
-                    <View style={styles.colorbackground}>
-                      <View style={styles.rowitems4}>
-                        <Text style={styles.textrowodd}>Builds trust when buying from new or unfamiliar brands</Text>
-                        <Image
-                          source={four}
-                          style={styles.columnimage4}
-                        />
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </>
-            ) : (
-              <>
-                <Text style={{ color: 'white', fontSize: 17, fontWeight: 'bold', textAlign: 'center' }}>Why We Need Verify2Buy App</Text>
-                <View style={styles.portraitContainer}>
-                  <View style={styles.portraittextContainer}>
-                    <View style={styles.rowitemss}>
-                      <Image
-                        source={one}
-                        style={styles.columnimage}
-                      />
-                      <Text style={styles.textrowpotrate}>Quick and easy scanning to check product authenticity in real-time</Text>
-                    </View>
-                    <View style={styles.rowitemss}>
-                      <Image
-                        source={two}
-                        style={styles.columnimage}
-                      />
-                      <Text style={styles.textrowpotrate}>Confirms that the scanned product is genuine and not a fake</Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.portraitContainer}>
-                  <View style={styles.portraittextContainer}>
-                    <View style={styles.rowitemss}>
-                      <Image
-                        source={three}
-                        style={styles.columnimage}
-                      />
-                      <Text style={styles.textrowpotrate}>Helps prevent the purchase of counterfeit food items that may be harmful</Text>
-                    </View>
-                    <View style={styles.rowitemss}>
-                      <Image
-                        source={four}
-                        style={styles.columnimage}
-                      />
-                      <Text style={styles.textrowodd}>Provides users with trust when buying from unknown or new brands</Text>
-                    </View>
-                  </View>
-                </View>
-              </>
-            )}
-          </ScrollView>
-          {/* </ImageBackground>
-      </SafeAreaView> */}
-        </View>
-        {/* <Modal visible={disclaimerPopup} transparent={true}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <View style={styles.gridview}>
-              <ScrollView style={styles.guidescrollView}>
-                <Text style={styles.fakeheader}>Disclaimer : </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap',marginTop:5 }}>
-                <Text style={styles.faketext}>
-                  The Verify2Buy application requires an active internet connection to scan and retrieve product information. 
-                  Standard data charges from your mobile network provider may apply.
-                  {"\n"}
-                  {"\n"}
-                  Please note that Verify2Buy relies on UPC (Universal Product Code) and GS1 standards for product verification. 
-                  Some products or retailers, such as IKEA and others who do not participate in the UPC or GS1 systems, may not be verifiable 
-                  through our application.
-                  {"\n"}
-                  {"\n"}
-                  Verify2Buy is a product verification facilitator only. Universum Global Solutions LLC does not sell, endorse, or 
-                  guarantee any products scanned through the app. Consumers are solely responsible for their purchasing decisions
-                   and assume all risks associated with the purchase of any product.
-                  {"\n"}
-                  {"\n"}
-                  While we strive to provide accurate and up-to-date product information, availability and accuracy of 
-                  data depend on external sources and manufacturer participation. Universum Global Solutions LLC is not 
-                  responsible for any inaccuracies, omissions, or missing product data.
-                  {"\n"}
-                  {"\n"}
-                  By using Verify2Buy, you acknowledge and accept these terms.
-                </Text>
-                </View>
-                 </ScrollView>
-              </View>
-              <View style={{flexDirection:'row',flexWrap:'wrap',gap:7, alignSelf: 'flex-end'}}>
-              <TouchableOpacity style={styles.errorbutton}>
-                <Text style={styles.errortext} onPress={handelAccept}>Accept</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.errorbutton}>
-                <Text style={styles.errortext} onPress={handelDecline}>Decline</Text>
-              </TouchableOpacity>
-            </View>
-            </View>
+      <View style={styles.cardContainer}>
+        {benefits.map((item, index) => (
+          <View key={index} style={[styles.card, { backgroundColor: theme.colors.card }]}>
+            {/* <Icon name={item.icon} size={28} color={theme.colors.accent} /> */}
+            <Image
+              source={item.image}
+              style={styles.columnimage}
+            />
+            <Text style={[styles.cardTitle, { color: theme.colors.text }]}>{item.title}</Text>
+            <Text style={[styles.cardDesc, { color: theme.colors.textSecondary,fontWeight:500 }]}>{item.description}</Text>
           </View>
-        </Modal> */}
-      </LinearGradient>
+        ))}
+         </View>
+    
+
+          {/* <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.colors.primary }]}
+            onPress={() => navigation.navigate('Scanner')}
+          >
+            <Text style={[styles.buttonText, { color: theme.colors.surface }]}>Get Started</Text>
+          </TouchableOpacity> */}
+    </ScrollView>
+    {/* </LinearGradient> */}
     </MenuDrawer>
+    
   );
 };
 
 const styles = StyleSheet.create({
 
-  close: {
-    position: 'absolute',
-    top: 5,
-    left: 235
+   close: {
+        position: 'absolute',
+        top: 5,
+        left: 235
+    },
+
+    sideimgcontainer: {
+        width: 170,
+        height: 50,
+        marginLeft: 8,
+        marginTop: 17,
+        flexDirection: 'row',
+        alignItems: 'center',
+        //borderWidth:1,
+        marginBottom: 10
+    },
+
+    sidetinyLogo: {
+        width: 53,
+        height: 53,
+    },
+
+    menncontainer: {
+        display: 'flex',
+        //justifyContent:'center',
+        flex: 1,
+        //alignSelf:'center',
+        marginBottom: 50,
+        marginTop: 10,
+        width: 290,
+        //marginLeft:7,
+        //marginLeft: 55,
+        flexDirection: 'column',
+        //flex: 1,
+        //padding: 20,
+        gap: 3,
+        borderBottomColor: "white",
+        borderLeftColor: "white",
+        borderTopColor: 'rgb(71, 162, 228)',
+        //borderTopColor: '#b3b3b3',
+        //borderRightColor:'white',
+        borderWidth: 1,
+    },
+
+    menubar: {
+        //backgroundColor:'#5e73e5',
+        height: 30,
+        borderRadius: 10,
+        width: 270,
+        marginLeft: 7,
+        height: 35,
+        marginTop: 20
+        //borderColor:'#2596be',
+    },
+    menubarHovered: {
+        backgroundColor: '#d9e9fb',
+        opacity: 100,
+        height: 35,
+        width: 270
+    },
+
+    footerTextcontainer: {
+        // marginTop:70,
+        borderBottomColor: "white",
+        borderTopColor: 'rgb(71, 162, 228)',
+        borderWidth: 1,
+        borderLeftColor: "white",
+        width: 290,
+    },
+
+    footerContainer: {
+        display: 'flex',
+        flex: 1,
+        width: 290,
+        flexDirection: 'row',
+        gap: 7,
+        //marginTop:200,
+        //marginLeft:7,
+        // borderBottomColor:"white",
+        // borderTopColor:'#2596be',
+        // borderWidth:1,
+        // borderLeftColor:"white",
+    },
+
+    footerbar: {
+        marginLeft: 7,
+        marginTop: 10
+    },
+
+    menuopen: {
+        marginLeft: 10,
+        marginTop: 5,
+    },
+
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 5,
   },
-  menuopen: {
-    marginLeft: 10,
-    marginTop: 5,
+  header: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  subtitle: {
+    fontSize: 14,
+    // marginTop: 9,
+    textAlign: 'center',
+  },
+  cardContainer: {
+    marginVertical: 0,
+    marginTop:-10
+  //backgroundColor:"red"
+  },
+  card: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  cardDesc: {
+    fontSize: 14,
+    marginTop: 4,
   },
 
-  sidemenu: {
+  button: {
+    marginTop: 10,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  columnimage: {
+    width: 45,
+    height: 30,
+    objectFit:'cover'
+
+  },
+   sidemenu: {
     flex: 1,
     backgroundColor: 'white',
     width: 280
   },
+ 
+});
 
-  guidecontainer: {
-    flex: 1,
-    marginTop: 7,
-    // width:maxwidth,
-    // height:maxheight
-  },
-  textConatiner: {
-    flexDirection: 'column',
-    gap: 15,
-  },
-  portraitContainer: {
-    flex: 1,
-
-  },
-  portraittextContainer: {
-    flexDirection: 'row',
-    gap: 5,
-    // backgroundColor:'black',
-    width: maxwidth,
-    marginLeft: 10,
-    marginRight: 10,
-    // width:500
-    // gap:170
-    // rowGap:10,
-    //display:'flex',
-    // alignItems:'center'
-  },
-  menncontainer: {
-    display: 'flex',
-    //justifyContent:'center',
-    flex: 1,
-    //alignSelf:'center',
-    marginBottom: 90,
-    marginTop: 10,
-    width: 290,
-    //marginLeft:7,
-    //marginLeft: 55,
-    flexDirection: 'column',
-    //flex: 1,
-    //padding: 20,
-    gap: 3,
-    borderBottomColor: "white",
-    borderLeftColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
-    //borderTopColor: '#b3b3b3',
-    //borderRightColor:'white',
-    borderWidth: 1,
-  },
-  menubar: {
-    //backgroundColor:'#5e73e5',
-    height: 30,
-    borderRadius: 10,
-    width: 270,
-    marginLeft: 7,
-    height: 35,
-    marginTop: 20
-    //borderColor:'#2596be',
-  },
-  menubarHovered: {
-    backgroundColor: '#d9e9fb',
-    opacity: 100,
-    height: 35,
-    width: 270
-  },
-  sideimgcontainer: {
-    width: 170,
-    height: 50,
-    marginLeft: 8,
-    marginTop: 17,
-    flexDirection: 'row',
-    alignItems: 'center',
-    //borderWidth:1,
-    marginBottom: 10
-  },
-  sidetinyLogo: {
-    width: 53,
-    height: 53,
-  },
-  footerContainer: {
-    display: 'flex',
-    flex: 1,
-    width: 290,
-    flexDirection: 'row',
-    gap: 7,
-    //marginTop:200,
-    //marginLeft:7,
-    // borderBottomColor:"white",
-    // borderTopColor:'#2596be',
-    // borderWidth:1,
-    // borderLeftColor:"white",
-  },
-  footerbar: {
-    marginLeft: 7,
-    marginTop: 10
-  },
-  footerTextcontainer: {
-    // marginTop:70,
-    borderBottomColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
-    borderWidth: 1,
-    borderLeftColor: "white",
-    width: 290,
-  },
-  videostyle: {
-    width: 320,
-    height: 270
-  },
-  videostylelandscape: {
-    width: 620,
-    height: 250
-  },
-  guidescrollView: {
-    //marginBottom: 10,
-    // maxHeight: 630,
-  },
-  backgroundimage: {
-    flex: 1,
-    // justifyContent: 'center',
-    // width:360,
-    // height:700
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor: '#000',
-    marginLeft: 5,
-    marginTop: 70
-  },
-  imageWrapper: {
-    width: 200,
-    height: 200,
-    overflow: 'hidden', 
-    borderRadius: 10,
-  },
-  image: {
-    width: 180,
-    height: 180,
-    resizeMode: 'contain',
-  },
-  scannerLine: {
-    position: 'absolute',
-    width: 145,
-    marginLeft: 25,
-    height: 4,
-    backgroundColor: 'rgb(61, 202, 179)',
-    opacity: 0.8,
-  },
-  colorbackground: {
-    //backgroundColor:'#FFFFFF50',
-    width: maxwidth,
-    // height:620,
-    // borderRadius:40,
-    // marginLeft:10,
-    // marginRight:10
-  },
-  rowitems: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'row',
-    width: maxwidth,
-    marginLeft: 10,
-    marginRight: 10,
-    gap: 5,
-    backgroundColor: '#FFFFFF50',
-    borderRadius: 40,
-  },
-
-  rowitems4: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'row',
-    // width:250,
-    width: maxwidth,
-    marginLeft: 10,
-    marginRight: 10,
-    //  gap:5,
-    backgroundColor: '#FFFFFF50',
-    borderRadius: 40,
-    //  width:maxwidth,
-    //  marginLeft:5,
-    // marginRight:10,
-    // gap:1,
-    // backgroundColor:'#FFFFFF50',
-  },
-  columnimage: {
-    width: 90,
-    height: 120,
-    resizeMode: 'contain',
-
-  },
-  columnimage4: {
-    width: 90,
-    height: 120,
-    resizeMode: 'contain',
-  },
-
-  textrow: {
-    fontSize: 17,
-    color: 'white',
-    flexWrap: 'wrap',
-    display: 'flex',
-    alignSelf: 'center',
-    flexShrink: 1,
-
-    //  width:maxwidth,
-    //  marginLeft:10,
-    //  marginRight:10
-    //  marginLeft:10
-  },
-  rowitems3: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'row',
-    width: maxwidth,
-    marginLeft: 10,
-    marginRight: 10,
-    gap: 5,
-    backgroundColor: '#FFFFFF50',
-    borderRadius: 40,
-  },
-  textrowodd: {
-    fontSize: 17,
-    color: 'white',
-    flexWrap: 'wrap',
-    display: 'flex',
-    alignSelf: 'center',
-    marginLeft: 10,
-    marginRight: 10,
-    flexShrink: 1,
-    width: 300
-  },
-  textrowpotrate: {
-    fontSize: 17,
-    color: 'white',
-    flexWrap: 'wrap',
-    display: 'flex',
-    alignSelf: 'center',
-    //  width:250,
-    flexShrink: 1,
-    //  marginLeft:10
-  },
-  rowitemss: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'row',
-    gap: 7,
-
-  },
-   centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    // opacity: 0.8 ,
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-    gridview: {
-    padding: 10,
-    maxHeight: 400,
-  },
-    fakeheader: {
-    fontSize: 19,
-    // color: '#04467e',
-    color:'red',
-    // flex:1,
-    flexWrap: "wrap"
-  },
-    faketext: {
-    fontSize: 17,
-    color: '#04467e',
- flexShrink: 1,
-    width:300
-  },
-  errorbutton: {
-    padding: 10,
-    height: 40,
-    width: 100,
-    backgroundColor: '#7cb1e0ff',
-    borderRadius: 50,
-    // / borderColor:'rgb(253, 126, 20)',
-    flex: '1',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 15,
-  },
-
-  errortext: {
-    color: 'white',
-    fontSize: 15,
-    fontFamily: 'Times New Roman", Times, serif',
-    fontWeight: 'bold'
-  },
-})
+export default Login;

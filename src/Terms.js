@@ -1,17 +1,21 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { StyleSheet, View, Animated, Text,TouchableOpacity, Image, ScrollView, Dimensions,Modal, Linking} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import logo from '../assets/logo.png'
+import logodark from '../assets/logoblack.png'
 import MenuDrawer from 'react-native-side-drawer'
 import LinearGradient from 'react-native-linear-gradient';
 const { maxwidth, maxheight } = Dimensions.get('window');
-import one from '../assets/universum_logo.png'
+import one from '../assets/universum.png'
+import DeviceCountry from 'react-native-device-country';
+import ThemeContext from './themes/ThemeContext';
 
 export default function Terms({ navigation }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [orientation, setOrientation] = useState('portrait');
   const [isOpen, setIsOpen] = useState(false);
-
+const { isDarkMode } = useContext(ThemeContext);
+const [india, setIndia] = useState('')
 
 
   const menucontent = () => {
@@ -30,8 +34,19 @@ export default function Terms({ navigation }) {
     setIsOpen(false)
   }
 
+  const country = () => {
+    DeviceCountry.getCountryCode()
+      .then((result) => {
+        setIndia(result.code)
+        console.log(result.code)
+      })
+      .catch((e) => {
+        console.log(e);
+      });
 
-  const naviagte = (id) => {
+  }
+
+ const naviagte = (id) => {
     if (id === 1) {
       navigation.navigate('Scanner')
       setIsOpen(false)
@@ -53,124 +68,163 @@ export default function Terms({ navigation }) {
       setIsOpen(false)
     }
      if (id === 6) {
+      navigation.navigate('Settings')
+      setIsOpen(false)
+    }
+     if (id === 7) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
-
   }
+  
   const appicon = () => {
     navigation.navigate('Home')
   }
 
   const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
-    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
-//   const menuItemsIndia = [
-//     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-//     // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-//     { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-//     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-//     { id: 5, label: 'Privacy Policy', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-//     { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
-//   ];
-
-  const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
+  const menuItemsIndia = [
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
 
-  const navigationView = () => (
-    <>
-      <ScrollView>
-        <View style={styles.close}>
-          <TouchableOpacity onPress={closeDrawer}>
-            <Icon
-              name="close-circle"
-              size={25}
-              color="rgb(71, 162, 228)"
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.sideimgcontainer}>
-          <Image
-            style={styles.sidetinyLogo}
-            source={logo}
-          />
-          <TouchableOpacity onPress={appicon}>
-            <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
-          </TouchableOpacity>
-        </View>
-          <View style={styles.menncontainer}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagte(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        <View style={styles.footerTextcontainer}>
-          <Text style={{ fontFamily: 'Roboto', color: '#3078a4', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
-        </View>
-        <View style={styles.footerContainer}>
-          {footermenuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.footerbar}
-            // style={[
-            //   styles.menubar,
-            //   hoveredIndex === index && styles.menubarHovered, 
-            // ]}
-            // onPressIn={() => setHoveredIndex(index)}
-            // onPressOut={() => setHoveredIndex(null)}
-            //onPress={()=>naviagtion(index)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Icon
-                  name={item.icon}
-                  size={25}
-                  color={item.iconColor}
-                  style={{ marginLeft: 10, marginTop: 5 }}
-                />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </>
-  );
+
+   const footermenuItems = [
+    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+  ];
+
+
+
+
+ 
+       const navigationView = () => (
+         <>
+           <ScrollView>
+             <View style={styles.close}>
+               <TouchableOpacity onPress={closeDrawer}>
+                 <Icon
+                   name="close-circle"
+                   size={25}
+                   color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
+                 />
+               </TouchableOpacity>
+             </View>
+             <View style={styles.sideimgcontainer}>
+               <Image
+                 style={styles.sidetinyLogo}
+                 source={!isDarkMode ?  logo : logo}
+               />
+               <TouchableOpacity onPress={appicon}>
+                 <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
+               </TouchableOpacity>
+             </View>
+             {india === "India" || "in" ? (
+               <View style={styles.menncontainer}>
+                 {menuItemsIndia.map((item, index) => (
+                   <TouchableOpacity
+                     key={item.id}
+                     style={[
+                       styles.menubar,
+                       hoveredIndex === index && styles.menubarHovered,
+                     ]}
+                     onPressIn={() => setHoveredIndex(index)}
+                     onPressOut={() => setHoveredIndex(null)}
+                     onPress={() => naviagte(item.id)}
+                   >
+                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                       <Icon
+                         name={item.icon}
+                         size={25}
+                         color={item.iconColor}
+                         style={{ marginLeft: 10, marginTop: 5 }}
+                       />
+                       <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                     </View>
+                   </TouchableOpacity>
+                 ))}
+               </View>
+             ) : (
+               <View style={styles.menncontainer}>
+                 {menuItems.map((item, index) => (
+                   <TouchableOpacity
+                     key={item.id}
+                     style={[
+                       styles.menubar,
+                       hoveredIndex === index && styles.menubarHovered,
+                     ]}
+                     onPressIn={() => setHoveredIndex(index)}
+                     onPressOut={() => setHoveredIndex(null)}
+                     onPress={() => naviagte(item.id)}
+                   >
+                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                       <Icon
+                         name={item.icon}
+                         size={25}
+                         color={item.iconColor}
+                         style={{ marginLeft: 10, marginTop: 5 }}
+                       />
+                       <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                     </View>
+                   </TouchableOpacity>
+                 ))}
+               </View>
+             )}
+             <View style={styles.footerTextcontainer}>
+               <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
+             </View>
+             <View style={styles.footerContainer}>
+               {footermenuItems.map((item, index) => (
+                 <TouchableOpacity
+                   key={item.id}
+                   style={styles.footerbar}
+                 // style={[
+                 //   styles.menubar,
+                 //   hoveredIndex === index && styles.menubarHovered, 
+                 // ]}
+                 // onPressIn={() => setHoveredIndex(index)}
+                 // onPressOut={() => setHoveredIndex(null)}
+                 //onPress={()=>naviagtion(index)}
+                 >
+                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                     <Icon
+                       name={item.icon}
+                       size={25}
+                       color={item.iconColor}
+                       style={{ marginLeft: 10, marginTop: 5 }}
+                     />
+                   </View>
+                 </TouchableOpacity>
+               ))}
+             </View>
+           </ScrollView>
+         </>
+       );
 
     useEffect(() => {
       TermsLink()
+      country()
     }, [])
 
 const TermsLink = () => {
-      Linking.openURL("https://universumgs.com/privacypolicy.html")
+      Linking.openURL("https://www.universumgs.com/privacy.html")
   }
 
 
@@ -184,7 +238,7 @@ const TermsLink = () => {
       overlay={true}
       opacity={0.4}
     >
-      <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
+      <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
         {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
         <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
         <View>
@@ -202,7 +256,7 @@ const TermsLink = () => {
                 <View style={styles.guidecontainer}>
                   <View style={styles.textConatiner}>
                     <Text style={{ color: 'white', fontSize: 17, fontWeight: 'bold', textAlign: 'center' }}><Text>Will have a hyperlink that will take to our website</Text> <Text style={{color:'#04467e'}} onPress={TermsLink} >universumgs.com</Text> <Text>& display the full privacy policy</Text></Text>
-                      <View style={styles.rowitems}>
+                      <View style={{display:"flex",alignSelf:"center"}}>
                         <Image
                           source={one}
                           style={styles.columnimage}
@@ -247,7 +301,6 @@ const styles = StyleSheet.create({
   },
   portraitContainer: {
     flex: 1,
-
   },
   portraittextContainer: {
     flexDirection: 'row',
@@ -267,7 +320,7 @@ const styles = StyleSheet.create({
     //justifyContent:'center',
     flex: 1,
     //alignSelf:'center',
-    marginBottom: 90,
+    marginBottom: 50,
     marginTop: 10,
     width: 290,
     //marginLeft:7,
@@ -393,6 +446,7 @@ const styles = StyleSheet.create({
   },
   rowitems: {
     display: 'flex',
+   
     //flex: 1,
     // flexDirection: 'row',
     // width: maxwidth,
@@ -422,9 +476,10 @@ const styles = StyleSheet.create({
     // backgroundColor:'#FFFFFF50',
   },
   columnimage: {
-    width: 150,
-    height: 150,
+    width: 120,
+    height: 120,
     resizeMode: 'contain',
+    // backgroundColor:"black"
 
   },
   columnimage4: {

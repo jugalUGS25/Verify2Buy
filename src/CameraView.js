@@ -1,12 +1,10 @@
-import React, { useEffect, useState, useRef} from 'react';
-import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, Image, ScrollView, Modal, FlatList, Dimensions, useWindowDimensions} from 'react-native';
+import React, { useEffect, useState, useRef,useContext} from 'react';
+import { StyleSheet, View, Text, Platform, Linking, TouchableOpacity, Alert, PanResponder,Image, ScrollView, Modal, FlatList, Dimensions, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { StatusBar } from 'react-native';
-import {
-  Camera, useCameraDevice, useCodeScanner, useFrameProcessor,
-
-} from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera';
 import GetLocation from 'react-native-get-location'
+import { useIsFocused } from '@react-navigation/native'
 import { promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
 import Dialog from "react-native-dialog";
 import { PermissionsAndroid } from 'react-native';
@@ -15,7 +13,8 @@ import closeimg from '../assets/closeicon.png';
 import Translatelanguages from './Translate';
 import logo from '../assets/logo.png'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
-import RNExitApp from 'react-native-exit-app';
+//import RNExitApp from 'react-native-exit-app';
+// import { Platform, BackHandler, Alert } from 'react-native';
 import MenuDrawer from 'react-native-side-drawer'
 import DeviceInfo, { useIsEmulator } from 'react-native-device-info'
 import { openDatabase } from 'react-native-sqlite-storage'
@@ -24,6 +23,8 @@ import ViewShot from 'react-native-view-shot';
 import LinearGradient from 'react-native-linear-gradient';
 // import translate from 'translate-google-api';
 import APISetting from './config/config'
+import { useAppTheme } from './theme'
+import ThemeContext from './themes/ThemeContext';
 
 var db = openDatabase({ name: 'r2a.db' })
 
@@ -69,6 +70,45 @@ export default function CameraView({ navigation }) {
   const camera = useRef(null);
   const devices = useCameraDevice(value)
   const screenShot = useRef();
+  const theme = useAppTheme();
+  const { isDarkMode } = useContext(ThemeContext);
+
+  // camera lifecycle & scanner guard
+  const isFocused = useIsFocused();
+  const [cameraActive, setCameraActive] = useState(true);
+  useEffect(() => { setCameraActive(isFocused); }, [isFocused]);
+
+  const scanningRef = useRef(false);
+  const abortCtrl = useRef(null);
+  useEffect(() => () => { if (abortCtrl.current) abortCtrl.current.abort?.(); }, []);
+
+
+    const panResponder = () => {
+    let dx = 0;
+
+    return PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const { dx, dy } = gestureState;
+        const isHorizontalSwipe = Math.abs(dx) > Math.abs(dy);
+        if (isHorizontalSwipe) {
+          setScrollEnabled(false); // Disable ScrollView scroll
+        }
+        return isHorizontalSwipe;
+      },
+     
+      onPanResponderRelease: () => {
+        setScrollEnabled(true); // Re-enable scrolling
+         if (dx > 50) {
+          // Swipe right threshold, you can adjust this value
+          handleDeleteItem(id);
+        }
+
+      },
+      onPanResponderTerminate: () => {
+        setScrollEnabled(true); // Also re-enable if interrupted
+      },
+    });
+  };
 
 
 
@@ -153,7 +193,8 @@ export default function CameraView({ navigation }) {
   const networkError = async () => {
     setnetworkerror(false)
     await AsyncStorage.removeItem('access_token',);
-    RNExitApp.exitApp();
+    //RNExitApp.exitApp();
+    exitApp();
   }
 
   const closenetworkslow = async () => {
@@ -298,206 +339,148 @@ export default function CameraView({ navigation }) {
 
 
 
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr', 'ean-13', 'ean-8', 'upc-e', 'code-128', 'code-39', 'upc-a'],
+    const codeScanner = useCodeScanner({
+    codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39','upc-a'],
     onCodeScanned: (codes) => {
-      setdatacode('')
-      setproduct('');
-      setproductname('');
-      setdes('')
-      setregion('');
-      setImage('');
-      setcategory('');
-      for (const code of codes) {
-        console.log(`Code Value: ${code.value}`);
-        console.log('code', code)
-        setdatacode(code.value)
-        setcodetype(code.type)
+      const first = codes?.[0];
+      if (!first?.value) return;
+      if (scanningRef.current) return;
+      scanningRef.current = true;
 
-        console.log(code)
-        // if(code.type === "code-128")
-        // {
-        //   alert('code-128')
-        // }
-        if (code.value.startsWith("https")) {
-          Linking.openURL(code.value)
-          setdatacode(code.value)
-        }
-        else if (code.value.startsWith("www")) {
-          Linking.openURL("https:" + code.value)
-          setdatacode("https:" + code.value)
-        }
-        else if (code.value.startsWith("http")) {
-          Linking.openURL(code.value)
-          setdatacode(code.value)
-        }
-      }
-      submit()
+      setproduct(''); setproductname(''); setdes(''); setregion('');
+      setImage(''); setcategory(''); setdatacode(first.value); setcodetype(first.type);
+
+      // Optional: confirm before opening external links
+      // if (/^https?:/i.test(first.value)) { Linking.openURL(first.value); }
+
+      submit().finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
     }
-
   })
 
 
+
   const submit = async () => {
-    const token = await AsyncStorage.getItem('access_token');
-    setmodalvisible(true)
-    if (datacode !== "") {
-      setcamerview(false);
-      let data = {
-        method: 'POST',
-        credentials: 'same-origin',
-        mode: 'same-origin',
-        body: JSON.stringify({
-          "code": datacode,
-          "encryptResponse": false,
-          "codeType": code_type,
-          "deviceType": OS,
-          "deviceModel": devicebrand,
-          "latitude": latitude,
-          "longitude": longitude,
-          "deviceId": "",
-          "location": "",
-          "country": ""
-        }),
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      };
-      //console.log('datastored',data)
+  if (!datacode) return;
+  setmodalvisible(true);
+  setcamerview(false);
+  setCameraActive(false);
 
-      // const controller = new AbortController();
-      // const timeoutId = setTimeout(() => controller.abort(),  15000);
-      // console.log('timeoutId',timeoutId)
-      //  const url = "/upc/product/search"
-      //  const fullapiurl = APISetting.apiurl+url
-      try {
-        // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/upc/product/search", {
-        //   ...data,
-        //   signal: controller.signal, 
-        // });
-          const response = await fetch("https://universumgs.com/anticounterfeit/api/upc/product/search", data);
-
-        // clearTimeout(timeoutId);
-
-        if (response.status === 401) {
-          const newToken = await tokensubmit();
-          if (newToken) {
-            return submit(true);
-          }
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const res = await response.json();
-        if (response.status === 200) {
-          console.log('res', res)
-          if (res.success === false) {
-            setresponsefail(true)
-            setmodalvisible(false)
-          }
-          else {
-            setTimeout(() => {
-              setvisible(true)
-              setmodalvisible(false)
-              saveHistoryData(res)
-              //rewardsData()
-              setCounter(prevCounter => {
-                const updatedCounter = prevCounter + 1;
-                saveRewards(updatedCounter)
-                return updatedCounter;
-              });
-              // setCounter(prevCounter => {
-              // const updatedCounter = prevCounter + 1;
-              // rewardsData(updatedCounter);
-              // return updatedCounter;
-              //});
-            }, 4000)
-
-          }
-
-          setproduct(res.product.brand);
-          setproductname(res.product.name);
-          setcategory(res.product.category);
-          if (res.product.description !== "") {
-            setdes(res.product.description);
-          }
-          else {
-            setdes('')
-          }
-          if (res.product.imageUrl !== "" && res.product.imageUrl !== null) {
-            setImage(res.product.imageUrl);
-            //setImage('');
-          }
-          else {
-            setImage('');
-          }
-          setregion(res.product.region);
-          // setImage(res.product.imageUrl);
-          setImagelarge(res.product.imageUrl)
-
-        }
-        else {
-          setmodalvisible(false)
-          Alert.alert('', 'error', [
-            {
-              text: 'Cancel',
-              onPress: () => console.log('Cancel Pressed'),
-              style: 'cancel',
-            },
-            { text: 'OK', onPress: () => console.log('OK Pressed') },
-          ]);
-        }
-
-      }
-
-      catch (error) {
-        console.log('error api', error)
-        setmodalvisible(false)
-        setdatacode('')
-        setcamerview(true)
-      }
-    }
-
-    // else {
-    //   tokensubmit()
-    //   submit()
-    // }
-
-  }
-
-  const saveRewards = async (updatedCounter) => {
-    try {
-      await AsyncStorage.setItem('rewards', updatedCounter.toString());
-      rewardsData()
-    } catch (error) {
-      console.error('Failed to save rewards:', error);
-    }
+  const payload = {
+    code: datacode,
+    encryptResponse: false,
+    codeType: code_type,
+    deviceType: OS,
+    deviceModel: devicebrand,
+    latitude, longitude,
+    deviceId: '',
+    location: '',
+    country: ''
   };
 
-  const rewardsData = async () => {
-    const rewards = await AsyncStorage.getItem('rewards');
-    console.log('points', rewards);
-    db.transaction(function (tx) {
-      tx.executeSql(
-        'INSERT INTO r2a_rewardstable (rewards_points) VALUES (?)',
-        [rewards],
-        (tx, results) => {
-          console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
-            console.log('Success', 'rewards inserted successfully');
-          } else {
-            console.log('Error', 'Insertion failed');
-          }
-        },
-        (tx, error) => {
-          console.error('Insert Error:', error);
-        }
-      );
+  if (abortCtrl.current) abortCtrl.current.abort();
+  abortCtrl.current = new AbortController();
+  const signal = abortCtrl.current.signal;
+
+  try {
+    const token = await AsyncStorage.getItem('access_token');
+    const url = 'https://universumgs.com/anticounterfeit/api/upc/product/search';
+    let res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal
     });
+
+    if (res.status === 401) {
+      const newToken = await tokensubmit();
+      if (!newToken) throw new Error('Token refresh failed');
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${newToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal
+      });
+    }
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    handleVerifyResult(json);
+  } catch (e) {
+    console.log('verify error', e);
+    setresponsefail(true);
+  } finally {
+    setmodalvisible(false);
+    setcamerview(true);
+    setCameraActive(isFocused);
   }
+};
+
+function handleVerifyResult(res) {
+  if (res?.success === false) {
+    setresponsefail(true);
+    return;
+  }
+  setproduct(res.product.brand);
+  setproductname(res.product.name);
+  setcategory(res.product.category);
+  if (res.product.description !== "") {
+    setdes(res.product.description);
+  }
+  else {
+    setdes('')
+  }
+  if (res.product.imageUrl !== "" && res.product.imageUrl !== null) {
+    setImage(res.product.imageUrl);
+    //setImage('');
+  }
+  else {
+    setImage('');
+  }
+  setregion(res.product.region);
+  setvisible(true);
+  saveHistoryData(res);
+  //setCounter(prev => { const v = prev + 1; saveRewards(v); return v; });
+}
+
+
+  // const saveRewards = async (updatedCounter) => {
+  //   try {
+  //     await AsyncStorage.setItem('rewards', updatedCounter.toString());
+  //     rewardsData()
+  //   } catch (error) {
+  //     console.error('Failed to save rewards:', error);
+  //   }
+  // };
+
+  // const rewardsData = async () => {
+  //   const rewards = await AsyncStorage.getItem('rewards');
+  //   console.log('points', rewards);
+  //   db.transaction(function (tx) {
+  //     tx.executeSql(
+  //       'INSERT INTO r2a_rewardstable (rewards_points) VALUES (?)',
+  //       [rewards],
+  //       (tx, results) => {
+  //         console.log('Results', results.rowsAffected);
+  //         if (results.rowsAffected > 0) {
+  //           console.log('Success', 'rewards inserted successfully');
+  //         } else {
+  //           console.log('Error', 'Insertion failed');
+  //         }
+  //       },
+  //       (tx, error) => {
+  //         console.error('Insert Error:', error);
+  //       }
+  //     );
+  //   });
+  // }
 
   const saveHistoryData = (res) => {
     if (res.product !== null) {
@@ -614,7 +597,6 @@ export default function CameraView({ navigation }) {
   //   RNExitApp.exitApp();
   //  }
 
-
   const menucontent = () => {
     return (
       <View style={styles.sidemenu}>
@@ -623,7 +605,7 @@ export default function CameraView({ navigation }) {
     )
   }
 
-  const naviagtion = (id) => {
+  const naviagte = (id) => {
     if (id === 1) {
       navigation.navigate('Scanner')
       setIsOpen(false)
@@ -640,11 +622,15 @@ export default function CameraView({ navigation }) {
       navigation.navigate('Guide')
       setIsOpen(false)
     }
-        if (id === 5) {
-       navigation.navigate('Privacy Policy')
+    if (id === 5) {
+      navigation.navigate('Privacy Policy')
       setIsOpen(false)
     }
-    if (id === 6) {
+     if (id === 6) {
+      navigation.navigate('Settings')
+      setIsOpen(false)
+    }
+     if (id === 7) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
@@ -652,139 +638,144 @@ export default function CameraView({ navigation }) {
   }
 
 
-
-  const menuItems = [
-   { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
-    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+ const menuItems = [
+     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
   const menuItemsIndia = [
-  { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    // { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: 'rgb(71, 162, 228)' },
-    { id: 6, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
+
+
   const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
+
 
   const appicon = () => {
     navigation.navigate('Home')
   }
 
-  const navigationView = () => (
-    <>
-      <ScrollView>
-        <View style={styles.close}>
-          <TouchableOpacity onPress={closeDrawer}>
-            <Icon
-              name="close-circle"
-              size={25}
-              color="rgb(71, 162, 228)"
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.sideimgcontainer}>
-          <Image
-            style={styles.sidetinyLogo}
-            source={logo}
-          />
-          <TouchableOpacity onPress={appicon}>
-            <Text style={styles.Apptitle}>Verify2Buy</Text>
-          </TouchableOpacity>
-        </View>
-        {india === "India" ? (
-          <View style={styles.menncontainer}>
-            {menuItemsIndia.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagtion(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={styles.screentitle}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.menncontainer}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagtion(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={styles.screentitle}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        <View style={styles.footerTextcontainer}>
-          <Text style={styles.Followus}>Follow us on</Text>
-        </View>
-        <View style={styles.footerContainer}>
-          {footermenuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.footerbar}
-            // style={[
-            //   styles.menubar,
-            //   hoveredIndex === index && styles.menubarHovered, 
-            // ]}
-            // onPressIn={() => setHoveredIndex(index)}
-            // onPressOut={() => setHoveredIndex(null)}
-            //onPress={()=>naviagtion(index)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Icon
-                  name={item.icon}
-                  size={25}
-                  color={item.iconColor}
-                  style={{ marginLeft: 10, marginTop: 5 }}
-                />
-              </View>
+    const navigationView = () => (
+      <>
+        <ScrollView>
+          <View style={styles.close}>
+            <TouchableOpacity onPress={closeDrawer}>
+              <Icon
+                name="close-circle"
+                size={25}
+                color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
+              />
             </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </>
-  );
+          </View>
+          <View style={styles.sideimgcontainer}>
+            <Image
+              style={styles.sidetinyLogo}
+              source={!isDarkMode ?  logo : logo}
+            />
+            <TouchableOpacity onPress={appicon}>
+              <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
+            </TouchableOpacity>
+          </View>
+          {india === "India" || "in" ? (
+            <View style={styles.menncontainer}>
+              {menuItemsIndia.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.menubar,
+                    hoveredIndex === index && styles.menubarHovered,
+                  ]}
+                  onPressIn={() => setHoveredIndex(index)}
+                  onPressOut={() => setHoveredIndex(null)}
+                  onPress={() => naviagte(item.id)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Icon
+                      name={item.icon}
+                      size={25}
+                      color={item.iconColor}
+                      style={{ marginLeft: 10, marginTop: 5 }}
+                    />
+                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.menncontainer}>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.menubar,
+                    hoveredIndex === index && styles.menubarHovered,
+                  ]}
+                  onPressIn={() => setHoveredIndex(index)}
+                  onPressOut={() => setHoveredIndex(null)}
+                  onPress={() => naviagte(item.id)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Icon
+                      name={item.icon}
+                      size={25}
+                      color={item.iconColor}
+                      style={{ marginLeft: 10, marginTop: 5 }}
+                    />
+                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+          <View style={styles.footerTextcontainer}>
+            <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
+          </View>
+          <View style={styles.footerContainer}>
+            {footermenuItems.map((item, index) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.footerbar}
+              // style={[
+              //   styles.menubar,
+              //   hoveredIndex === index && styles.menubarHovered, 
+              // ]}
+              // onPressIn={() => setHoveredIndex(index)}
+              // onPressOut={() => setHoveredIndex(null)}
+              //onPress={()=>naviagtion(index)}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Icon
+                    name={item.icon}
+                    size={25}
+                    color={item.iconColor}
+                    style={{ marginLeft: 10, marginTop: 5 }}
+                  />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </>
+    );
+
 
   const openDrawer = () => {
     setIsOpen(true)
@@ -879,7 +870,7 @@ export default function CameraView({ navigation }) {
         opacity={0.4}
       >
         {/* <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-        <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
+        <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
           {/* <ScrollView> */}
           <SafeAreaView style={{ flex: 1, }}>
             <SafeAreaProvider>
@@ -894,7 +885,7 @@ export default function CameraView({ navigation }) {
             </Text>
        </TouchableOpacity>
         </View> */}
-                {/* <View style={styles.menuopen}>
+                {/* <View style={[styles.menuopen, { backgroundColor: theme.colors.card }]}>
         <TouchableOpacity onPress={openDrawer}>
           <Icon
             name="menu-open"
@@ -910,30 +901,30 @@ export default function CameraView({ navigation }) {
                         ref={camera}
                         style={[styles.absoluteFill, { width, height }]}
                         device={devices}
-                        isActive={true}
+                        isActive={cameraActive}
                         codeScanner={codeScanner}
                         torch={trochbutton}
                       // photo={true}
                       // frameProcessor={frameProcessor}
                       />
                     </View>
-                    <View style={styles.trochConatiner}>
+                    <View style={[styles.trochConatiner, { backgroundColor: theme.colors.card }]}>
                       {trochicon === true ? (
                         <TouchableOpacity onPress={trochon}>
-                          <Icon name='flashlight-off' size={25} color="rgb(71, 162, 228)" />
+                          <Icon name='flashlight-off' size={25} color={theme.colors.primary} />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity onPress={trochoff}>
-                          <Icon name='flashlight' size={25} color="rgb(71, 162, 228)" />
+                          <Icon name='flashlight' size={25} color={theme.colors.primary} />
                         </TouchableOpacity>
                       )}
                     </View>
-                    <View style={styles.menuopen}>
+                    <View style={[styles.menuopen, { backgroundColor: theme.colors.card }]}>
                       <TouchableOpacity onPress={openDrawer}>
                         <Icon
                           name="menu-open"
                           size={27}
-                          color="rgb(71, 162, 228)"
+                          color={theme.colors.primary}
                         />
                       </TouchableOpacity>
                     </View>
@@ -960,23 +951,23 @@ export default function CameraView({ navigation }) {
                     <ScrollView style={styles.oveallscrollView} showsVerticalScrollIndicator={false}>
                       <View style={styles.scalebutton} >
                         <TouchableOpacity onPress={increaseFontSize}>
-                          <Text style={styles.buttonText}>A+</Text>
+                          <Text style={[styles.buttonText, { backgroundColor: theme.colors.primary }]}>A+</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={decreaseFontSize}>
-                          <Text style={styles.buttonText}>A-</Text>
+                          <Text style={[styles.buttonText, { backgroundColor: theme.colors.primary }]}>A-</Text>
                         </TouchableOpacity>
                         {/* <TouchableOpacity onPress={opentranslateform} style={styles.translateicon} >
                         <Icon
                           name="google-translate"
                           size={25}
-                          color="rgb(71, 162, 228)"
+                          color={theme.colors.primary}
                         />
                       </TouchableOpacity> */}
                         <TouchableOpacity onPress={closeicon} style={styles.closeicon} >
                           <Icon
                             name="close-circle"
                             size={25}
-                            color="rgb(71, 162, 228)"
+                            color={theme.colors.primary}
                           />
                         </TouchableOpacity>
                       </View>
@@ -1134,8 +1125,8 @@ export default function CameraView({ navigation }) {
             <Modal visible={responsefail} transparent={true}>
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                  <Text style={styles.fakeheader}>Sorry, No Products Found !</Text>
-                  <TouchableOpacity style={styles.errorbutton} onPress={closeError}>
+                  <Text style={[styles.fakeheader, { color: theme.colors.primary }]}>Sorry, No Products Found !</Text>
+                  <TouchableOpacity style={[styles.errorbutton, { backgroundColor: theme.colors.primary }]} onPress={closeError}>
                     <Text style={styles.errortext}>Close</Text>
                   </TouchableOpacity>
                 </View>
@@ -1151,17 +1142,17 @@ export default function CameraView({ navigation }) {
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
                   <View style={styles.gridview}>
-                    <Text style={styles.fakeheader}>Network Error
+                    <Text style={[styles.fakeheader, { color: theme.colors.primary }]}>Network Error
                       <Icon
                         name="access-point-network-off"
                         size={25}
-                        color="#04467e"
+                        color={theme.colors.primary}
                       />
                     </Text>
-                    <Text style={styles.faketext}>Please try again later to scan the products
+                    <Text style={[styles.faketext, { color: theme.colors.primary }]}>Please try again later to scan the products
                     </Text>
                   </View>
-                  <TouchableOpacity style={styles.errorbutton} onPress={networkError}>
+                  <TouchableOpacity style={[styles.errorbutton, { backgroundColor: theme.colors.primary }]} onPress={networkError}>
                     <Text style={styles.errortext}>CLOSE</Text>
                   </TouchableOpacity>
                 </View>
@@ -1171,19 +1162,19 @@ export default function CameraView({ navigation }) {
             <Dialog.Container visible={networkslow} animationType="slide" >
               <Dialog.Description>
                 <View style={styles.gridview}>
-                  <Text style={styles.fakeheader}>Network Error
+                  <Text style={[styles.fakeheader, { color: theme.colors.primary }]}>Network Error
                     <Icon
                       name="access-point-network-off"
                       size={25}
-                      color="#04467e"
+                      color={theme.colors.primary}
                     />
                   </Text>
-                  <Text style={styles.faketext}>Please check your connection and try again.
+                  <Text style={[styles.faketext, { color: theme.colors.primary }]}>Please check your connection and try again.
                   </Text>
                 </View>
               </Dialog.Description>
               {/* <Dialog.Button label="close" onPress={closeImage} style={{backgroundColor:'rgb(42, 107, 211)',color:"white",width:100 }}/> */}
-              <TouchableOpacity style={styles.errorbutton} onPress={closenetworkslow}>
+              <TouchableOpacity style={[styles.errorbutton, { backgroundColor: theme.colors.primary }]} onPress={closenetworkslow}>
                 <Text style={styles.errortext}>Close</Text>
               </TouchableOpacity>
             </Dialog.Container>
@@ -1563,7 +1554,7 @@ const styles = StyleSheet.create({
     //justifyContent:'center',
     flex: 1,
     //alignSelf:'center',
-    marginBottom: 90,
+     marginBottom: 50,
     marginTop: 10,
     width: 290,
     //marginLeft:7,

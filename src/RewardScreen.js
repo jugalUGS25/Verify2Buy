@@ -1,12 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { RefreshControl, StyleSheet, Pressable, View, Text, Linking, ImageBackground, TouchableOpacity, Button, Alert, Image, ScrollView, ActivityIndicator, Modal, FlatList, Dimensions, DrawerLayoutAndroid, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import logo from '../assets/logo.png';
+import coupon from '../assets/couponimage.png';
+import logodark from '../assets/logoblack.png'
 import MenuDrawer from 'react-native-side-drawer';
 import LinearGradient from 'react-native-linear-gradient';
 import DeviceCountry from 'react-native-device-country';
 import uber from '../assets/uber.png'
 import ola from '../assets/ola.png'
+import ThemeContext from './themes/ThemeContext';
 import { openDatabase } from 'react-native-sqlite-storage'
 var db = openDatabase({ name: 'r2a.db' })
 const { maxwidth, maxheight } = Dimensions.get('window');
@@ -14,9 +17,12 @@ const { maxwidth, maxheight } = Dimensions.get('window');
 export default function RewardScreen({ navigation }) {
   // const drawer = useRef(null);
   const [hoveredIndex, setHoveredIndex] = useState(null)
-  const [rewardscode, setrewardscode] = useState([])
+  // const [rewardscode, setrewardscode] = useState([])
   const [isOpen, setIsOpen] = useState(false);
   const [india, setIndia] = useState('')
+  const { isDarkMode } = useContext(ThemeContext);
+  const [Rewardsdatas, setRewardsdatas] = useState([]);
+   const [Rewardpoints, setRewardpoints] = useState('');
 
   const country = () => {
     DeviceCountry.getCountryCode()
@@ -33,18 +39,36 @@ export default function RewardScreen({ navigation }) {
     Linking.openURL('https://www.uber.com/in/en/')
   }
 
-  const getrewards = () => {
+
+   const getrewards = async () => {
+
     db.transaction(tx => {
-      tx.executeSql('SELECT * FROM r2a_rewardstable', [], (tx, res) => {
-        if (res.rows.length > 0) {
-          let lastItem = res.rows.item(res.rows.length - 1);
-          setrewardscode([lastItem]);
-        } else {
-          setrewardscode([]);
-        }
+      tx.executeSql('SELECT * FROM r2a_usertable', [], (tx, res) => {
+        var temp = [];
+        for (let i = 0; i < res.rows.length; ++i)
+          temp.push(res.rows.item(i));
+        console.log(temp)
+        const uniqueArray = [...new Map(temp.map(item => [item.barcode, item])).values()]
+        setRewardsdatas(uniqueArray)
+     
       });
     });
-  };
+
+  
+  }
+
+  // const getrewards = () => {
+  //   db.transaction(tx => {
+  //     tx.executeSql('SELECT * FROM r2a_rewardstable', [], (tx, res) => {
+  //       if (res.rows.length > 0) {
+  //         let lastItem = res.rows.item(res.rows.length - 1);
+  //         setrewardscode([lastItem]);
+  //       } else {
+  //         setrewardscode([]);
+  //       }
+  //     });
+  //   });
+  // };
 
 
   useEffect(() => {
@@ -88,7 +112,7 @@ export default function RewardScreen({ navigation }) {
     setIsOpen(false)
   }
 
-  const naviagte = (id) => {
+   const naviagte = (id) => {
     if (id === 1) {
       navigation.navigate('Scanner')
       setIsOpen(false)
@@ -106,6 +130,14 @@ export default function RewardScreen({ navigation }) {
       setIsOpen(false)
     }
     if (id === 5) {
+      navigation.navigate('Privacy Policy')
+      setIsOpen(false)
+    }
+     if (id === 6) {
+      navigation.navigate('Settings')
+      setIsOpen(false)
+    }
+     if (id === 7) {
       navigation.navigate('Logout')
       setIsOpen(false)
     }
@@ -117,133 +149,140 @@ export default function RewardScreen({ navigation }) {
   }
 
 
-  const menuItems = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+     const menuItems = [
+     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, label: 'History', icon: 'history', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, label: 'Close App', icon: 'logout', iconColor: 'rgb(71, 162, 228)' },
+    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
-  const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: 'rgb(71, 162, 228)' },
-    { id: 2, icon: 'apple', iconColor: 'rgb(71, 162, 228)' },
-    { id: 3, icon: 'linkedin', iconColor: 'rgb(71, 162, 228)' },
-    { id: 4, icon: 'file-excel-box', iconColor: 'rgb(71, 162, 228)' },
-    { id: 5, icon: 'instagram', iconColor: 'rgb(71, 162, 228)' },
+  
+    const footermenuItems = [
+    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
   ];
 
 
-  const navigationView = () => (
-    <>
-      <ScrollView>
-        <View style={styles.close}>
-          <TouchableOpacity onPress={closeDrawer}>
-            <Icon
-              name="close-circle"
-              size={25}
-              color="rgb(71, 162, 228)"
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.sideimgcontainer}>
-          <Image
-            style={styles.sidetinyLogo}
-            source={logo}
-          />
-          <TouchableOpacity onPress={appicon}>
-            <Text style={styles.Apptitle}>Verify2Buy</Text>
-          </TouchableOpacity>
-        </View>
-        {india === "India" || "in" ? (
-          <View style={styles.menncontainer}>
-            {menuItemsIndia.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagte(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={styles.screentitle}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.menncontainer}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.menubar,
-                  hoveredIndex === index && styles.menubarHovered,
-                ]}
-                onPressIn={() => setHoveredIndex(index)}
-                onPressOut={() => setHoveredIndex(null)}
-                onPress={() => naviagte(item.id)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                  <Text style={styles.screentitle}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        <View style={styles.footerTextcontainer}>
-          <Text style={styles.Followus}>Follow us on</Text>
-        </View>
-        <View style={styles.footerContainer}>
-          {footermenuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.footerbar}
-            // style={[
-            //   styles.menubar,
-            //   hoveredIndex === index && styles.menubarHovered, 
-            // ]}
-            // onPressIn={() => setHoveredIndex(index)}
-            // onPressOut={() => setHoveredIndex(null)}
-            //onPress={()=>naviagtion(index)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Icon
-                  name={item.icon}
-                  size={25}
-                  color={item.iconColor}
-                  style={{ marginLeft: 10, marginTop: 5 }}
-                />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </>
-  );
+
+
+   const navigationView = () => (
+     <>
+       <ScrollView>
+         <View style={styles.close}>
+           <TouchableOpacity onPress={closeDrawer}>
+             <Icon
+               name="close-circle"
+               size={25}
+               color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
+             />
+           </TouchableOpacity>
+         </View>
+         <View style={styles.sideimgcontainer}>
+           <Image
+             style={styles.sidetinyLogo}
+             source={!isDarkMode ?  logo : logo}
+           />
+           <TouchableOpacity onPress={appicon}>
+             <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
+           </TouchableOpacity>
+         </View>
+         {india === "India" || "in" ? (
+           <View style={styles.menncontainer}>
+             {menuItemsIndia.map((item, index) => (
+               <TouchableOpacity
+                 key={item.id}
+                 style={[
+                   styles.menubar,
+                   hoveredIndex === index && styles.menubarHovered,
+                 ]}
+                 onPressIn={() => setHoveredIndex(index)}
+                 onPressOut={() => setHoveredIndex(null)}
+                 onPress={() => naviagte(item.id)}
+               >
+                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                   <Icon
+                     name={item.icon}
+                     size={25}
+                     color={item.iconColor}
+                     style={{ marginLeft: 10, marginTop: 5 }}
+                   />
+                   <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                 </View>
+               </TouchableOpacity>
+             ))}
+           </View>
+         ) : (
+           <View style={styles.menncontainer}>
+             {menuItems.map((item, index) => (
+               <TouchableOpacity
+                 key={item.id}
+                 style={[
+                   styles.menubar,
+                   hoveredIndex === index && styles.menubarHovered,
+                 ]}
+                 onPressIn={() => setHoveredIndex(index)}
+                 onPressOut={() => setHoveredIndex(null)}
+                 onPress={() => naviagte(item.id)}
+               >
+                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                   <Icon
+                     name={item.icon}
+                     size={25}
+                     color={item.iconColor}
+                     style={{ marginLeft: 10, marginTop: 5 }}
+                   />
+                   <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+                 </View>
+               </TouchableOpacity>
+             ))}
+           </View>
+         )}
+         <View style={styles.footerTextcontainer}>
+           <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
+         </View>
+         <View style={styles.footerContainer}>
+           {footermenuItems.map((item, index) => (
+             <TouchableOpacity
+               key={item.id}
+               style={styles.footerbar}
+             // style={[
+             //   styles.menubar,
+             //   hoveredIndex === index && styles.menubarHovered, 
+             // ]}
+             // onPressIn={() => setHoveredIndex(index)}
+             // onPressOut={() => setHoveredIndex(null)}
+             //onPress={()=>naviagtion(index)}
+             >
+               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                 <Icon
+                   name={item.icon}
+                   size={25}
+                   color={item.iconColor}
+                   style={{ marginLeft: 10, marginTop: 5 }}
+                 />
+               </View>
+             </TouchableOpacity>
+           ))}
+         </View>
+       </ScrollView>
+     </>
+   );
 
   // useEffect(() => {
   //    coupontoken()
@@ -262,7 +301,7 @@ export default function RewardScreen({ navigation }) {
     >
       {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
          <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-      <LinearGradient colors={["#88def1", "#04467e"]} style={{ flex: 1, }} >
+      <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
         {/* <SafeAreaView style={{ flex: 1, backgroundColor: '#6cbdd8' }}> */}
         <ScrollView style={styles.guidescrollView}>
           <View style={styles.menuopen}>
@@ -276,11 +315,25 @@ export default function RewardScreen({ navigation }) {
           </View>
           <View style={styles.guidecontainer}>
             <View style={styles.mainconatiner}>
+              
               <View style={styles.text}>
                 <Text style={{ fontSize: 18, fontWeight: '800', color: 'white' }}>
-                  Your Reward Points : 50</Text>
+                  Your Reward Points :
+                  {Rewardsdatas.map((item, index) => (
+                    index === Rewardsdatas.length - 1 ? (
+                      <Text key={index}> {index+1}</Text>
+                    ) : null
+                      ))}
+                   </Text>
               </View>
-              <View style={styles.row}>
+            
+              <View style={styles.container}>
+                <View style={styles.imageWrapper}>
+                  <Image source={coupon} style={styles.image} />
+                </View>
+              </View>
+
+              {/* <View style={styles.row}>
                 <View style={styles.oval}>
                   <View style={styles.cutShape1} />
                   <View style={styles.pointstext}>
@@ -316,8 +369,8 @@ export default function RewardScreen({ navigation }) {
                   </View>
                   <View style={styles.cutShape} />
                 </View>
-              </View>
-              <View style={styles.row}>
+              </View> */}
+              {/* <View style={styles.row}>
                 <View style={styles.oval}>
                   <View style={styles.cutShape1} />
                   <View style={styles.pointstext}>
@@ -354,15 +407,15 @@ export default function RewardScreen({ navigation }) {
                   <View style={styles.cutShape} />
                 </View>
 
-              </View>
-              <View style={styles.row}>
+              </View> */}
+              {/* <View style={styles.row}>
                 <View style={styles.oval}>
                   <View style={styles.cutShape1} />
                   <View style={styles.pointstext}>
                     <Text style={{ color: 'white', fontSize: 19 }}>150</Text>
                   </View>
-                </View>
-                <View style={styles.coupncontainer}>
+                </View> */}
+                {/* <View style={styles.coupncontainer}>
                   <View style={styles.couponTextoconatiner}>
                     <View>
                       <View style={styles.coupontext1}>
@@ -398,8 +451,8 @@ export default function RewardScreen({ navigation }) {
                   <View style={styles.pointstext}>
                     <Text style={{ color: 'white', fontSize: 17, flexShrink: 1, }}>200</Text>
                   </View>
-                </View>
-                <View style={styles.coupncontainer}>
+                </View> */}
+                {/* <View style={styles.coupncontainer}>
                   <View style={styles.couponTextoconatiner}>
                     <View>
                       <View style={styles.coupontext1}>
@@ -427,8 +480,8 @@ export default function RewardScreen({ navigation }) {
                     </View>
                   </View>
                   <View style={styles.cutShape} />
-                </View>
-              </View>
+                </View> */}
+              {/* </View> */}
               <View></View>
             </View>
           </View>
@@ -525,7 +578,7 @@ const styles = StyleSheet.create({
     //justifyContent:'center',
     flex: 1,
     //alignSelf:'center',
-    marginBottom: 90,
+    marginBottom: 50,
     marginTop: 10,
     width: 290,
     //marginLeft:7,
@@ -686,5 +739,31 @@ const styles = StyleSheet.create({
     fontSize: 20,
     paddingLeft: 15,
     paddingTop: 10
-  }
+  },
+   container: {
+     display:'flex',
+    //justifyContent: 'center',
+    alignItems: 'center',
+    // // backgroundColor: '#000',
+    // // marginLeft:5,
+    // // marginTop:70
+    marginTop: 5
+  },
+  imageWrapper: {
+    width: 300,
+    height: 150,
+    overflow: 'hidden', 
+    // borderRadius: 10,
+    //  borderBottomColor: "black",
+    // borderLeftColor: "black",
+    // borderTopColor: 'rgb(71, 162, 228)',
+    // //borderTopColor: '#b3b3b3',
+    // //borderRightColor:'white',
+    // borderWidth: 1,
+  },
+  image: {
+    width: 300,
+    height: 140,
+    resizeMode: 'contain',
+  },
 })
