@@ -1,4 +1,4 @@
 const APISetting= {
-     apiurl: 'https://universumgs.com/anticounterfeit/api',
-   //local url: http://demo.solfordoc.com:8080/anticounterfeit/api',
+     apiurl: 'https://api.universumgs.com/api',
+   //local url: http://demo.solfordoc.com:8080/api',
 }
