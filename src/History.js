@@ -1,474 +1,706 @@
-import React, { useEffect, useState,useContext} from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
-import logo from '../assets/logo.png'
-import logodark from '../assets/logoblack.png'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
-import MenuDrawer from 'react-native-side-drawer'
-import { openDatabase } from 'react-native-sqlite-storage'
-var db = openDatabase({ name: 'r2a.db' })
-import DeviceCountry from 'react-native-device-country';
+import React, { useEffect, useState, useContext,useRef,useCallback } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+  Image,
+  Modal,
+  Animated
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { openDatabase } from 'react-native-sqlite-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import ThemeContext from './themes/ThemeContext';
+import { useIsFocused } from "@react-navigation/native"; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { maxwidth, maxheight } = Dimensions.get('window');
+var db = openDatabase({ name: 'r2a.db' });
 
 export default function History({ navigation }) {
-
   const [Historydatas, setHistorydatas] = useState([]);
-  const [india, setIndia] = useState('')
+  const [refreshing, setRefreshing] = useState(false);
   const { isDarkMode } = useContext(ThemeContext);
+  const [showPopup, setShowPopup] = useState(false);
+  //  const [showImage, setShowImage] = useState('');
+  //  const [barcode, setbarcode] = useState('');
+  const [showProductdetails, setshowProductdetails] = useState([])
+  const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
 
+const FadeUpView = ({ children, duration = 500, delay = 0, isFocused = true }) => {
+  const fadeAnims = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
 
-  const gethistydatas = async () => {
+  useEffect(() => {
+    let animation;
+    if (isFocused) {
+      fadeAnims.setValue(0);
+      translateY.setValue(20);
 
+      animation = Animated.parallel([
+        Animated.timing(fadeAnims, {
+          toValue: 1,
+          duration,
+          delay,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration,
+          delay,
+          useNativeDriver: true,
+        }),
+      ]);
+
+      animation.start();
+    }
+
+    return () => {
+      if (animation) animation.stop();
+    };
+  }, [isFocused]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: fadeAnims,
+        transform: [{ translateY }],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
+
+  // const gethistydatas = async () => {
+  //   db.transaction(tx => {
+  //     tx.executeSql('SELECT * FROM verify2buy_usertable', [], (tx, res) => {
+  //       var temp = [];
+  //       for (let i = 0; i < res.rows.length; ++i)
+  //         temp.push(res.rows.item(i));
+  //       console.log(temp);
+  //       const uniqueArray = [...new Map(temp.map(item => [item.barcode, item])).values()];
+  //       setHistorydatas(uniqueArray.reverse()); // Show newest first
+  //     });
+  //   });
+  // };
+
+  const viewDetails = (item) => {
+    const data = [item]
+    setShowPopup(true)
+    setshowProductdetails(data)
+  }
+
+  const handelclose = () => {
+    setShowPopup(false)
+    //setShowImage('')
+  }
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    //gethistydatas();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
+
+  const clearHistory = () => {
     db.transaction(tx => {
-      tx.executeSql('SELECT * FROM r2a_usertable', [], (tx, res) => {
+      tx.executeSql('DELETE FROM r2a_usertable', [], (tx, res) => {
+        console.log('History cleared');
+        setHistorydatas([]);
+      });
+    });
+  };
+
+
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM verify2buy_usertable', [], (tx, res) => {
         var temp = [];
         for (let i = 0; i < res.rows.length; ++i)
           temp.push(res.rows.item(i));
-        console.log(temp)
-        const uniqueArray = [...new Map(temp.map(item => [item.barcode, item])).values()]
-        setHistorydatas(uniqueArray)
+        console.log(temp);
+        const uniqueArray = [...new Map(temp.map(item => [item.barcode, item])).values()];
+        setHistorydatas(uniqueArray.reverse()); // Show newest first
       });
     });
+  }, [isFocused]);
 
-  }
+  const getCategoryIcon = (category) => {
+    const cat = category?.toLowerCase() || '';
+    if (cat.includes('medicine') || cat.includes('drug') || cat.includes('health')) return 'medical-bag';
+    if (cat.includes('food') || cat.includes('grocery')) return 'food';
+    if (cat.includes('electronics')) return 'devices';
+    if (cat.includes('clothing') || cat.includes('fashion')) return 'tshirt-crew';
+    if (cat.includes('beauty') || cat.includes('cosmetic')) return 'lipstick';
+    return 'package-variant';
+  };
 
-  // const handellocation = async () => {
+  const getCategoryColor = (category) => {
+    const cat = category?.toLowerCase() || '';
+    if (cat.includes('medicine') || cat.includes('drug') || cat.includes('health')) return '#FF6200';
+    if (cat.includes('food') || cat.includes('grocery')) return '#4CAF50';
+    if (cat.includes('electronics')) return '#2196F3';
+    if (cat.includes('clothing') || cat.includes('fashion')) return '#E91E63';
+    if (cat.includes('beauty') || cat.includes('cosmetic')) return '#9C27B0';
+    return '#FF6200';
+  };
 
-  //   GetLocation.getCurrentPosition({
-  //     enableHighAccuracy: true,
-  //     // timeout: 60000,
-  //   })
-  //     .then(location => {
-  //       country(location.latitude,location.longitude)
-  //       console.log('loaction',location)
-  //     })
-  //     .catch(error => {
-  //       const { code, message } = error;
-  //       console.warn(code, message);
-  //     })
-
-  // }
-
-  // const country = async (latitude,longitude) => {
-  //   try { 
-  //     const response = await fetch(
-  //       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-  //       {
-  //         method: 'GET',
-  //         headers: {
-  //           'User-Agent': 'com.r2aqrapp/1.0 (neelkrishnan999@gmail.com)',
-  //           'Accept': 'application/json',
-  //         },
-  //       }
-
+  // const fadeAnim = useRef(new Animated.Value(0)).current;
+  
+  //   useEffect(() => {
+  //     const fadeLoop = Animated.loop(
+  //       Animated.sequence([
+  //         Animated.timing(fadeAnim, {
+  //           toValue: 1,         // fade in
+  //           duration: 500,
+  //           useNativeDriver: true,
+  //         }),
+  //         Animated.timing(fadeAnim, {
+  //           toValue: 1,         // fade out
+  //           duration: 200,
+  //           useNativeDriver: true,
+  //         }),
+  //       ])
   //     );
-
-  //    if (response) {
-  //      const data = await response.json();
-  //     const rescoun = data.address
-  //       setIndia(rescoun.country)
-  //     }
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-  // };
+  
+  //     fadeLoop.start();
+  //   }, [fadeAnim]);
 
 
-  const country = () => {
-    DeviceCountry.getCountryCode()
-      .then((result) => {
-        setIndia(result.code)
-        console.log(result.code)
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-
-  }
-
-  useEffect(() => {
-    gethistydatas()
-    country()
-    // handellocation()
-  }, [])
 
 
-  const [hoveredIndex, setHoveredIndex] = useState(null)
-  const [isOpen, setIsOpen] = useState(false);
-  // const { historydatas } = route.params;
-  //  const drawer = useRef(null);
 
-  const menucontent = () => {
+  const HistoryItems = ({item,index}) => {
     return (
-      <View style={styles.sidemenu}>
-        {navigationView()}
-      </View>
-    )
-  }
-
-  const openDrawer = () => {
-    setIsOpen(true)
-  }
-
-  const closeDrawer = () => {
-    setIsOpen(false)
-  }
-
-  const naviagtion = (id) => {
-    if (id === 1) {
-      navigation.navigate('Scanner')
-      setIsOpen(false)
-    }
-    if (id === 2) {
-      navigation.navigate('RewardScreen')
-      setIsOpen(false)
-    }
-    if (id === 3) {
-      navigation.navigate('History')
-      setIsOpen(false)
-    }
-    if (id === 4) {
-      navigation.navigate('Guide')
-      setIsOpen(false)
-    }
-    if (id === 5) {
-      navigation.navigate('Privacy Policy')
-      setIsOpen(false)
-    }
-     if (id === 6) {
-      navigation.navigate('Settings')
-      setIsOpen(false)
-    }
-     if (id === 7) {
-      navigation.navigate('Logout')
-      setIsOpen(false)
-    }
-
-  }
-
-  const menuItems = [
-     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
-
-  const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
-
-
-
-   const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
-
-
-
-  const appicon = () => {
-    navigation.navigate('Home')
-  }
-
-    const navigationView = () => (
-      <>
-        <ScrollView>
-          <View style={styles.close}>
-            <TouchableOpacity onPress={closeDrawer}>
-              <Icon
-                name="close-circle"
-                size={25}
-                color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.sideimgcontainer}>
-            <Image
-              style={styles.sidetinyLogo}
-              source={!isDarkMode ?  logo : logo}
-            />
-            <TouchableOpacity onPress={appicon}>
-              <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
-            </TouchableOpacity>
-          </View>
-          {india === "India" || "in" ? (
-            <View style={styles.menncontainer}>
-              {menuItemsIndia.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.menubar,
-                    hoveredIndex === index && styles.menubarHovered,
-                  ]}
-                  onPressIn={() => setHoveredIndex(index)}
-                  onPressOut={() => setHoveredIndex(null)}
-                  onPress={() => naviagtion(item.id)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon
-                      name={item.icon}
-                      size={25}
-                      color={item.iconColor}
-                      style={{ marginLeft: 10, marginTop: 5 }}
-                    />
-                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+     <FadeUpView iisFocused={isFocused}  delay={index * 80}>
+      <TouchableOpacity
+        key={index}
+        style={styles.historyCard}
+        activeOpacity={0.7}
+      >
+        {/* Card Header */}
+        <View style={styles.cardHeader}>
+          <View style={[
+            styles.categoryIcon,
+            { backgroundColor: getCategoryColor(item.category) + '20' }
+          ]}>
+            {/* <Icon 
+                          name={getCategoryIcon(item.category)} 
+                          size={24} 
+                          color={getCategoryColor(item.category)} 
+                        /> */}
+            <View style={styles.imageconatiner}>
+              <Image source={{ uri: item.image }} style={styles.image} />
             </View>
-          ) : (
-            <View style={styles.menncontainer}>
-              {menuItems.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.menubar,
-                    hoveredIndex === index && styles.menubarHovered,
-                  ]}
-                  onPressIn={() => setHoveredIndex(index)}
-                  onPressOut={() => setHoveredIndex(null)}
-                  onPress={() => naviagtion(item.id)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon
-                      name={item.icon}
-                      size={25}
-                      color={item.iconColor}
-                      style={{ marginLeft: 10, marginTop: 5 }}
-                    />
-                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+          </View>
+          <View style={styles.cardHeaderText}>
+            <Text style={styles.cardNumber}> Scan #{Historydatas.length - index}</Text>
+            <View style={styles.verifiedBadge}>
+              <Icon name="check-circle" size={14} color="#4CAF50" />
+              <Text style={styles.verifiedText}>Verified</Text>
             </View>
-          )}
-          <View style={styles.footerTextcontainer}>
-            <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
           </View>
-          <View style={styles.footerContainer}>
-            {footermenuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.footerbar}
-              // style={[
-              //   styles.menubar,
-              //   hoveredIndex === index && styles.menubarHovered, 
-              // ]}
-              // onPressIn={() => setHoveredIndex(index)}
-              // onPressOut={() => setHoveredIndex(null)}
-              //onPress={()=>naviagtion(index)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                </View>
-              </TouchableOpacity>
-            ))}
+        </View>
+
+        {/* Card Content */}
+        <View style={styles.cardContent}>
+          <View style={styles.infoRow}>
+            <Icon name="barcode" size={18} color="#8E8E93" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Barcode</Text>
+              <Text style={styles.infoValue}>{item.barcode || "N/A"}</Text>
+            </View>
           </View>
-        </ScrollView>
-      </>
+
+          <View style={styles.infoRow}>
+            <Icon name="package-variant" size={18} color="#8E8E93" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Product</Text>
+              <Text style={styles.infoValue} numberOfLines={2}>
+                {item.prodname || "Unknown Product"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Icon name="shape-outline" size={18} color="#8E8E93" />
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Category</Text>
+              <Text style={[
+                styles.categoryBadge,
+                { color: getCategoryColor(item.category) }
+              ]}>
+                {item.category || "Uncategorized"}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Card Footer */}
+        <View style={styles.cardFooter}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => viewDetails(item)} >
+            {/* <Animated.View style={{ opacity: fadeAnim }}> */}
+              <Icon name="information-outline" size={18} color="#FF6200" />
+            {/* </Animated.View> */}
+            <Text style={styles.actionButtonText}>View Details</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+      </FadeUpView>
     );
+  };
+
 
   return (
-    <>
-      <MenuDrawer
-        open={isOpen}
-        position={'left'}
-        drawerContent={menucontent()}
-        drawerPercentage={300}
-        animationTime={250}
-        overlay={true}
-        opacity={0.4}
-      >
-        {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
-      <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-        <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
-          <ScrollView>
-            <View style={styles.menuopen}>
-              <TouchableOpacity onPress={openDrawer}>
-                <Icon
-                  name="menu-open"
-                  size={25}
-                  color="#ffff"
-                />
+    <LinearGradient colors={["#1A1A1A", "#0A0A0A"]} style={styles.container}>
+      <View style={[styles.safeArea, {  paddingTop: insets.top }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Icon name="history" size={32} color="#FF6200" />
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.title}>Scan History</Text>
+              <Text style={styles.subtitle}>
+                {Historydatas.length} {Historydatas.length === 1 ? 'scan' : 'scans'} total
+              </Text>
+            </View>
+          </View>
+          {Historydatas.length > 0 && (
+            <TouchableOpacity
+              onPress={clearHistory}
+              style={styles.clearButton}
+            >
+              <Icon name="delete-outline" size={24} color="#FF6200" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Content */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#FF6200"
+              colors={["#FF6200"]}
+            />
+          }
+        >
+          {Historydatas && Historydatas.length > 0 ? (
+            <>
+              {Historydatas.map((item, index) =>
+                item ? (
+                <View key={index}>
+                  <HistoryItems item={item} index={index}/>
+                  </View>
+                 
+                ) : null
+              )}
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Icon name="history" size={80} color="#4A4A4A" />
+              <Text style={styles.emptyTitle}>No Scan History</Text>
+              <Text style={styles.emptySubtitle}>
+                Start scanning products to see your history here
+              </Text>
+              <TouchableOpacity
+                style={styles.scanButton}
+                onPress={() => navigation.navigate('Scan')}
+              >
+                <Icon name="barcode-scan" size={24} color="#FFFFFF" />
+                <Text style={styles.scanButtonText}>Start Scanning</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.menucontainer}>
-              {Historydatas && Historydatas.length > 0 ? (
-                Historydatas.map((item, index) =>
-                  item ? (
-                    <View key={index} style={styles.menuList}>
-                      <Text style={styles.item}>Barcode: {item.barcode || ""}</Text>
-                      <Text style={styles.item}>Product: {item.prodname || ""}</Text>
-                      <Text style={styles.item}>Category: {item.category || ""}</Text>
+          )}
+
+          <View style={{ height: 20 }} />
+        </ScrollView>
+      </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showPopup}
+        onRequestClose={() => setShowPopup(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={styles.gridview}>
+              <ScrollView style={styles.guidescrollView} showsVerticalScrollIndicator={false}>
+                {/* <Text style={styles.fakeheader}>Product Image : </Text> */}
+                <View style={{ alignSelf: 'flex-end' }}>
+                  <TouchableOpacity onPress={handelclose}>
+                    <Icon name="close-circle" size={24} color="#FF6200" />
+                  </TouchableOpacity>
+                </View>
+                {showProductdetails.length > 0 ? (
+                  showProductdetails.map((item, index) => (
+                    <View style={{ flexDirection: 'column', gap: 4,marginTop:5}} key={index}>
+                      <View>
+                        <View style={styles.imagefullconatiner}>
+                          <Image source={{ uri: item.image }} style={styles.imagefull} />
+                        </View>
+                      </View>
+                      <View style={{marginTop:3}}>
+                        <Text style={styles.detailLabel}>
+                          <Icon name="barcode-scan" size={17} color="#FF6200" /> Barcode :
+                          <Text style={styles.detailText}> {item.barcode}</Text>
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={styles.detailLabel}>
+                           <Icon name="tag" size={17} color="#FF6200" /> Brand :
+                          <Text style={styles.detailText}> {item.brandname}</Text>
+                        </Text>
+                      </View>
+                      <View >
+                        <Text style={styles.detailLabel}>
+                          <Icon name="package-variant" size={17} color="#FF6200" /> Product:
+                          <Text style={styles.detailText}> {item.prodname}</Text>
+                        </Text>
+                      </View>
+                      <View >
+                        <Text style={styles.detailLabel}>
+                          <Icon name="shape" size={17} color="#FF6200" /> Category :
+                          <Text style={styles.detailText}> {item.category}</Text>
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={styles.detailLabel}>
+                           <Icon name="information" size={17} color="#FF6200" /> Description :
+                          <Text style={styles.detailText}> {item.description}</Text>
+                        </Text>
+                      </View>
+                      <View >
+                        <Text style={styles.detailLabel}>
+                           <Icon name="earth" size={17} color="#FF6200" /> Region :
+                          <Text style={styles.detailText}> {item.region}</Text>
+                        </Text>
+                      </View>
                     </View>
-                  ) : null
-                )
-              ) : null}
+                 
+                  ))
+                ) : (
+                  <></>
+                )}
+              </ScrollView>
             </View>
-            {/* </View> */}
-          </ScrollView>
-          {/* </ImageBackground>
-        </SafeAreaView> */}
-        </LinearGradient>
-      </MenuDrawer>
-    </>
+            <View>
+              <Text>
+                {"\n"}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </LinearGradient>
   );
-};
+}
+
 const styles = StyleSheet.create({
-  close: {
-    position: 'absolute',
-    top: 5,
-    left: 235
-  },
-  menuopen: {
-    marginLeft: 10,
-    marginTop: 5,
-  },
-
-  sidemenu: {
+  container: {
     flex: 1,
-    backgroundColor: 'white',
-    width: 280
   },
-  menucontainer: {
-    display: 'flex',
+  safeArea: {
     flex: 1,
-    marginBottom: 90,
-    marginTop: 15,
-    width: maxwidth,
-    marginLeft: 5,
-    marginRight: 5,
-    flexDirection: 'column',
-    gap: 15,
-
-    // backgroundColor:"red"
+    
   },
-  menncontainer: {
-    display: 'flex',
-    //justifyContent:'center',
-    flex: 1,
-    //alignSelf:'center',
-    marginBottom: 50,
-    marginTop: 10,
-    width: 290,
-    //marginLeft:7,
-    //marginLeft: 55,
-    flexDirection: 'column',
-    //flex: 1,
-    //padding: 20,
-    gap: 3,
-    borderBottomColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
-    //borderRightColor:'white',
-    borderWidth: 1,
-    borderLeftColor: "white",
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
-  menubar: {
-    //backgroundColor:'#5e73e5',
-    height: 30,
-    borderRadius: 10,
-    width: 270,
-    marginLeft: 7,
-    height: 35,
-    marginTop: 20
-    //borderColor:'#2596be',
-  },
-  menubarHovered: {
-    backgroundColor: '#d9e9fb',
-    opacity: 100,
-    height: 35,
-    width: 270
-  },
-  sideimgcontainer: {
-    width: 170,
-    height: 50,
-    marginLeft: 8,
-    marginTop: 17,
+  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    //borderWidth:1,
-    marginBottom: 10
-  },
-  sidetinyLogo: {
-    width: 53,
-    height: 53,
-  },
-  footerContainer: {
-    display: 'flex',
+    gap: 12,
     flex: 1,
-    width: 290,
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  clearButton: {
+    padding: 8,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 105
+  },
+  historyCard: {
+    backgroundColor: '#2C2C2E',
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardHeader: {
     flexDirection: 'row',
-    gap: 7,
-    //marginTop:200,
-    //marginLeft:7,
-    // borderBottomColor:"white",
-    // borderTopColor:'#2596be',
-    // borderWidth:1,
-    // borderLeftColor:"white",
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1A1A1A',
+    gap: 12,
   },
-  footerbar: {
-    marginLeft: 7,
-    marginTop: 10
+  categoryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  footerTextcontainer: {
-    // marginTop:70,
-    borderBottomColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
-    borderWidth: 1,
-    borderLeftColor: "white",
-    width: 290,
+  cardHeaderText: {
+    flex: 1,
   },
-  item: {
+  cardNumber: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  verifiedText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+  cardContent: {
+    padding: 16,
+    gap: 14,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  infoTextContainer: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  categoryBadge: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#ffff',
-    // backgroundColor:'#FFFFFF',
-    paddingLeft: 5,
+    fontWeight: '600',
   },
-  backgroundimage: {
+  cardFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#1A1A1A',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FF6200',
+  },
+  emptyState: {
     flex: 1,
     justifyContent: 'center',
-    // width:360,
-    // height:700
+    alignItems: 'center',
+    paddingVertical: 80,
   },
-  screentitle: {
-    fontFamily: 'Roboto',
-    color: '#3078a4',
-    fontSize: 20,
-    paddingLeft: 15,
-    paddingTop: 3,
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 20,
   },
-  Apptitle: {
-    fontFamily: 'Roboto',
-    color: '#3078a4',
-    fontSize: 20,
-    paddingLeft: 5,
-    paddingTop: 3
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
-  Followus: {
-    fontFamily: 'Roboto',
-    color: '#3078a4',
-    fontSize: 20,
-    paddingLeft: 15,
-    paddingTop: 10
-  }
-})
+  scanButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF6200',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 30,
+    gap: 10,
+    shadowColor: '#FF6200',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  scanButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+
+  imageconatiner: {
+    width: 65,
+    height: 65,
+    borderRadius: 40,
+    borderTopWidth: 2,
+    borderTopColor: '#e7691b',
+    borderRightWidth: 2,
+    borderRightColor: '#e7691b',
+    borderLeftWidth: 2,
+    borderLeftColor: '#e7691b',
+    borderBottomWidth: 2,
+    borderBottomColor: '#e7691b',
+  },
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+
+  },
+
+  imagefullconatiner: {
+
+    width: '100%',
+    height: 280,
+    // borderTopWidth: 2,
+    // borderTopColor: '#e7691b',
+    // borderRightWidth: 2,
+    // borderRightColor: '#e7691b',
+    // borderLeftWidth: 2,
+    // borderLeftColor: '#e7691b',
+    // borderBottomWidth: 2,
+    // borderBottomColor: '#e7691b',
+  },
+  imagefull: {
+    width: '100%',
+    height: 280,
+    // width: 60,
+    // height: 60,
+    // borderRadius: 30,
+
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    margin: 20,
+   // backgroundColor: 'white',
+     backgroundColor:'#2C2C2E',
+    // opacity: 0.8 ,
+    borderRadius: 20,
+    // padding: 35
+    padding: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    borderWidth:2,
+    borderColor:'#e7691b'
+  },
+  gridview: {
+    padding: 10,
+    maxHeight: 500,
+  },
+  fakeheader: {
+    fontSize: 19,
+    // color: '#04467e',
+    // color:'#fff',
+    color: '#e7691b',
+    // flex:1,
+    flexWrap: "wrap"
+  },
+  faketext: {
+    fontSize: 17,
+    // color: '#04467e'
+    // color:'#fff'
+    color: '#e7691b',
+  },
+
+
+  detailLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 3,
+  },
+  detailLabel: {
+    color: '#e7691b',
+    fontSize: 15,
+    fontFamily: 'Times New Roman", Times, serif',
+    fontWeight: 'bold'
+  },
+
+  detailText: {
+    color: '#8E8E93',
+    fontSize: 15,
+    fontFamily: 'Times New Roman", Times, serif',
+    fontWeight: 700
+  },
+
+
+
+  errortext: {
+    color: 'white',
+    //color:'#e7691b',
+    fontSize: 15,
+    fontFamily: 'Times New Roman", Times, serif',
+    fontWeight: 'bold'
+  },
+  // errorbutton: {
+  //     padding: 10,
+  //     height: 40,
+  //     width: 100,
+  //     // backgroundColor: '#04467e',
+  //     backgroundColor:'#FF6200',
+  //     borderRadius: 20,
+  //     // / borderColor:'rgb(253, 126, 20)',
+  //     flex: '1',
+  //     alignSelf: 'flex-end',
+  //     alignItems: 'center',
+  //     justifyContent: 'center',
+  //     marginTop: 15,
+  //   },
+});

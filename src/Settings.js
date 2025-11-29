@@ -3,7 +3,6 @@ import { StyleSheet, View, Animated, Text, TouchableOpacity, Image, ScrollView, 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import logo from '../assets/logo.png'
 import logodark from '../assets/logoblack.png'
-import MenuDrawer from 'react-native-side-drawer'
 import LinearGradient from 'react-native-linear-gradient';
 const { maxwidth, maxheight } = Dimensions.get('window');
 import dark from '../assets/dark.png'
@@ -11,9 +10,7 @@ import light from '../assets/light.png'
 // import { useColorScheme , Switch } from 'react-native'
 import ThemeContext from './themes/ThemeContext';
 import DeviceCountry from 'react-native-device-country';
-
-
-
+import Header from './components/Header';
 
 
 export default function Settings({ navigation }) {
@@ -63,7 +60,8 @@ export default function Settings({ navigation }) {
 
   const naviagte = (id) => {
     if (id === 1) {
-      navigation.navigate('Scanner')
+      //navigation.navigate('Scanner')
+      navigation.navigate('Home')
       setIsOpen(false)
     }
     if (id === 2) {
@@ -97,23 +95,25 @@ export default function Settings({ navigation }) {
     }
 
    const menuItems = [
-     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    //  { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 1, label: 'Home', icon: 'arch', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+     { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
   ];
 
   const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+    // { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 1, label: 'Home', icon: 'arch', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
   ];
 
 
@@ -241,15 +241,12 @@ export default function Settings({ navigation }) {
 
     return (
 
-        <MenuDrawer
-            open={isOpen}
-            position={'left'}
-            drawerContent={menucontent()}
-            drawerPercentage={300}
-            animationTime={250}
-            overlay={true}
-            opacity={0.4}
-        >             
+      <View style={styles.container}>
+          <Header 
+            variant="back" 
+            title="Settings" 
+            navigation={navigation}
+          />
             <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
                 
                     <ScrollView style={styles.guidescrollView}>
@@ -307,7 +304,7 @@ export default function Settings({ navigation }) {
                     </ScrollView>
                 
            </LinearGradient>
-        </MenuDrawer>
+      </View>
   
     );
 };

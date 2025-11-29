@@ -1,505 +1,401 @@
-import React, { useEffect, useState, useContext } from 'react';
-import {  StyleSheet, View, Text,TouchableOpacity, Image, ScrollView, Dimensions, } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
-import logo from '../assets/logo.png'
-import logodark from '../assets/logoblack.png'
-import MenuDrawer from 'react-native-side-drawer'
-import logomain from '../assets/logomain.png'
-import DeviceCountry from 'react-native-device-country';
+import React, { useContext } from 'react';
+import { 
+  StyleSheet, 
+  View, 
+  Text, 
+  Image, 
+  ScrollView, 
+  SafeAreaView ,
+  Dimensions
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
-const { maxwidth, maxheight } = Dimensions.get('window');
+import logomain from '../assets/logomain.png';
 import ThemeContext from './themes/ThemeContext';
+import Header from './components/Header';
+
+const { maxwidth, maxheight } = Dimensions.get('window');
 
 export default function Guide({ navigation }) {
-  const [hoveredIndex, setHoveredIndex] = useState(null)
-  const [orientation, setOrientation] = useState('portrait');
-  const [isOpen, setIsOpen] = useState(false);
-  const [india, setIndia] = useState('')
-   const { isDarkMode } = useContext(ThemeContext);
+  const { isDarkMode } = useContext(ThemeContext);
 
-  const country = () => {
-    DeviceCountry.getCountryCode()
-      .then((result) => {
-        setIndia(result.code)
-        console.log(result.code)
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-
-  }
-
-  // const handellocation = async () => {
-
-  //   GetLocation.getCurrentPosition({
-  //     enableHighAccuracy: true,
-  //     // timeout: 60000,
-  //   })
-  //     .then(location => {
-  //       country(location.latitude,location.longitude)
-  //       console.log('loaction',location)
-  //     })
-  //     .catch(error => {
-  //       const { code, message } = error;
-  //       console.warn(code, message);
-  //     })
-
-  // }
-
-  //   const country = async (latitude,longitude) => {
-  //     try { 
-  //       const response = await fetch(
-  //         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-  //         {
-  //           method: 'GET',
-  //           headers: {
-  //             'User-Agent': 'com.r2aqrapp/1.0',
-  //             'Accept': 'application/json',
-  //           },
-  //         }
-
-  //       );
-
-  //      if (response) {
-  //        const data = await response.json();
-  //         console.log('res',data.address.country)
-  //         setIndia(data.address.country)
-  //       }
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   };
-
-
-
-
-
-
-  const menucontent = () => {
-    return (
-      <View style={styles.sidemenu}>
-        {navigationView()}
-      </View>
-    )
-  }
-
-  const openDrawer = () => {
-    setIsOpen(true)
-  }
-
-  const closeDrawer = () => {
-    setIsOpen(false)
-  }
-
-
-    const naviagte = (id) => {
-    if (id === 1) {
-      navigation.navigate('Scanner')
-      setIsOpen(false)
-    }
-    if (id === 2) {
-      navigation.navigate('RewardScreen')
-      setIsOpen(false)
-    }
-    if (id === 3) {
-      navigation.navigate('History')
-      setIsOpen(false)
-    }
-    if (id === 4) {
-      navigation.navigate('Guide')
-      setIsOpen(false)
-    }
-    if (id === 5) {
-      navigation.navigate('Privacy Policy')
-      setIsOpen(false)
-    }
-     if (id === 6) {
-      navigation.navigate('Settings')
-      setIsOpen(false)
-    }
-     if (id === 7) {
-      navigation.navigate('Logout')
-      setIsOpen(false)
-    }
-
-  }
-  
-  const appicon = () => {
-    navigation.navigate('Home')
-  }
-
-   const menuItems = [
-     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+  const guideSteps = [
+    {
+      id: 1,
+      icon: 'cellphone-check',
+      title: 'Open the App',
+      description: 'Launch Verify2Buy on your mobile device',
+      color: '#4CAF50',
+    },
+    {
+      id: 2,
+      icon: 'barcode-scan',
+      title: 'Tap Scan Button',
+      description: 'Tap the orange scan button at the bottom center of your screen',
+      color: '#FF6200',
+    },
+    {
+      id: 3,
+      icon: 'camera',
+      title: 'Camera Opens',
+      description: 'The camera will activate in a few seconds, ready to scan',
+      color: '#2196F3',
+    },
+    {
+      id: 4,
+      // icon: 'qrcode-scan',
+      icon: 'barcode-scan',
+      title: 'Scan the Barcode / QR code',
+      description: 'Point your camera at the product barcode or QR code',
+      color: '#9C27B0',
+    },
+    {
+      id: 5,
+      icon: 'magnify',
+      title: 'Processing',
+      description: 'Wait a moment while we search our database for product details',
+      color: '#FF9800',
+    },
+    {
+      id: 6,
+      icon: 'check-circle',
+      title: 'View Results',
+      description: 'Product information appears with verification status',
+      color: '#4CAF50',
+    },
+    {
+      id: 7,
+      icon: 'history',
+      title: 'Check History',
+      description: 'View all your past scans in the History tab',
+      color: '#00BCD4',
+    },
   ];
 
-  const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
+  return (
+    <View style={styles.container}>
+      <Header 
+        variant="back" 
+        title="App Guide" 
+        navigation={navigation}
+      />
 
-
-
-   const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
-
-
-
-  useEffect(() => {
-    const updateOrientation = () => {
-      const { width, height } = Dimensions.get('window');
-      setOrientation(width > height ? 'landscape' : 'portrait');
-    };
-
-    const subscription = Dimensions.addEventListener('change', updateOrientation);
-    updateOrientation();
-
-    return () => subscription?.remove();
-  }, []);
-
-
-  useEffect(() => {
-    // handellocation()
-    country()
-  }, [])
-
-    const navigationView = () => (
-      <>
-        <ScrollView>
-          <View style={styles.close}>
-            <TouchableOpacity onPress={closeDrawer}>
-              <Icon
-                name="close-circle"
-                size={25}
-                color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
-              />
-            </TouchableOpacity>
+    <LinearGradient colors={["#1A1A1A", "#0A0A0A"]} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+       <ScrollView style={styles.content}>
+          showsVerticalScrollIndicator={false}
+        
+          {/* Header */}
+          <View style={styles.header}>
+            <Icon name="book-open-variant" size={40} color="#FF6200" />
+            <Text style={styles.title}>App Guide</Text>
+            <Text style={styles.subtitle}>
+              Learn how to use Verify2Buy in 7 easy steps
+            </Text>
           </View>
-          <View style={styles.sideimgcontainer}>
-            <Image
-              style={styles.sidetinyLogo}
-              source={!isDarkMode ?  logo : logo}
-            />
-            <TouchableOpacity onPress={appicon}>
-              <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
-            </TouchableOpacity>
-          </View>
-          {india === "India" || "in" ? (
-            <View style={styles.menncontainer}>
-              {menuItemsIndia.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.menubar,
-                    hoveredIndex === index && styles.menubarHovered,
-                  ]}
-                  onPressIn={() => setHoveredIndex(index)}
-                  onPressOut={() => setHoveredIndex(null)}
-                  onPress={() => naviagte(item.id)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon
-                      name={item.icon}
-                      size={25}
-                      color={item.iconColor}
-                      style={{ marginLeft: 10, marginTop: 5 }}
-                    />
-                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoWrapper}>
+              <Image source={logomain} style={styles.logoImage} />
             </View>
-          ) : (
-            <View style={styles.menncontainer}>
-              {menuItems.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.menubar,
-                    hoveredIndex === index && styles.menubarHovered,
-                  ]}
-                  onPressIn={() => setHoveredIndex(index)}
-                  onPressOut={() => setHoveredIndex(null)}
-                  onPress={() => naviagte(item.id)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon
-                      name={item.icon}
-                      size={25}
-                      color={item.iconColor}
-                      style={{ marginLeft: 10, marginTop: 5 }}
-                    />
-                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-          <View style={styles.footerTextcontainer}>
-            <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
           </View>
-          <View style={styles.footerContainer}>
-            {footermenuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.footerbar}
-              // style={[
-              //   styles.menubar,
-              //   hoveredIndex === index && styles.menubarHovered, 
-              // ]}
-              // onPressIn={() => setHoveredIndex(index)}
-              // onPressOut={() => setHoveredIndex(null)}
-              //onPress={()=>naviagtion(index)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
+
+          {/* Guide Steps */}
+          <View style={styles.stepsContainer}>
+            {guideSteps.map((step, index) => (
+              <View key={step.id} style={styles.stepCard}>
+                {/* Step Number Badge */}
+                <View style={[styles.stepBadge, { backgroundColor: step.color }]}>
+                  <Text style={styles.stepNumber}>{step.id}</Text>
                 </View>
-              </TouchableOpacity>
+
+                {/* Step Content */}
+                <View style={styles.stepContent}>
+                  <View style={styles.stepHeader}>
+                    <View style={[
+                      styles.stepIcon,
+                      { backgroundColor: step.color + '20' }
+                    ]}>
+                      <Icon name={step.icon} size={28} color={step.color} />
+                    </View>
+                    <Text style={styles.stepTitle}>{step.title}</Text>
+                  </View>
+                  <Text style={styles.stepDescription}>{step.description}</Text>
+                </View>
+
+                {/* Connector Line (except for last item) */}
+                {index < guideSteps.length - 1 && (
+                  <View style={styles.connectorLine} />
+                )}
+              </View>
             ))}
           </View>
-        </ScrollView>
-      </>
-    );
-  return (
-    <MenuDrawer
-      open={isOpen}
-      position={'left'}
-      drawerContent={menucontent()}
-      drawerPercentage={300}
-      animationTime={250}
-      overlay={true}
-      opacity={0.4}
-    >
-      <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
-        {/* <SafeAreaView style={{ flex: 1, backgroundColor: ' #F5F5F5' }}>
-        <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-        <ScrollView style={styles.guidescrollView}>
-          <View style={styles.menuopen}>
-            <TouchableOpacity onPress={openDrawer}>
-              <Icon
-                name="menu-open"
-                size={25}
-                color="#FFFF"
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={orientation === 'landscape' ? styles.portraitContainer : styles.guidecontainer}>
-            {/* <View style={styles.colorbackground}> */}
-            <View style={orientation === 'landscape' ? styles.portraitContainer : styles.textConatiner}>
-              <Text style={{ color: 'white', fontSize: 17, fontWeight: 'bold' }}>How to use Verify2Buy App</Text>
-              <Text style={{ color: 'white', fontSize: 17 }}>1. Take a phone and open the Verify2Buy app.</Text>
-              <Text style={{ color: 'white', fontSize: 17 }}>2. Click the <Icon name='menu-open' size={23} color="#ffff" /> icon to open the side menu and view the menu items.</Text>
-              {/* <Text style={{ color: 'white', fontSize: 17}}>2. Click Tap to start , the side menu will be opended (Note:Click the <Icon name='menu-open' size={23} color="#ffff"/> icon to open the side menu and view the menu items) and click on Barcode & QR Scanner menu.</Text> */}
-              <Text style={{ color: 'white', fontSize: 17 }}>3. Go to Barcode & QR Scanner Screen Camera will open in 5 seconds, allowing you to scan the barcode.</Text>
-              <Text style={{ color: 'white', fontSize: 17 }}>4. After barcode scanned, searching will be displayed, and after that, the barcode details of the product will appear </Text>
-              <Text style={{ color: 'white', fontSize: 17 }}>5. Click the <Icon name='menu-open' size={23} color="#ffff" /> icon to open the side menu and view the menu items.</Text>
-              <Text style={{ color: 'white', fontSize: 17 }}>6. History screen shows last scanned products details.</Text>
-              <View style={styles.container}>
-                <View style={styles.imageWrapper}>
-                  <Image source={logomain} style={styles.image} />
-                </View>
+
+          {/* Tips Card */}
+          <View style={styles.tipsCard}>
+            <View style={styles.tipsHeader}>
+              <Icon name="lightbulb-on" size={28} color="#FFD700" />
+              <Text style={styles.tipsTitle}>Pro Tips</Text>
+            </View>
+            <View style={styles.tipsList}>
+              <View style={styles.tipItem}>
+                <Icon name="check" size={20} color="#4CAF50" />
+                <Text style={styles.tipText}>
+                  Make sure you have good lighting when scanning
+                </Text>
+              </View>
+              <View style={styles.tipItem}>
+                <Icon name="check" size={20} color="#4CAF50" />
+                <Text style={styles.tipText}>
+                  Hold your phone steady and center the barcode
+                </Text>
+              </View>
+              <View style={styles.tipItem}>
+                <Icon name="check" size={20} color="#4CAF50" />
+                <Text style={styles.tipText}>
+                  Use the flashlight button in dark environments
+                </Text>
+              </View>
+              <View style={styles.tipItem}>
+                <Icon name="check" size={20} color="#4CAF50" />
+                <Text style={styles.tipText}>
+                  Earn rewards with every verified scan
+                </Text>
               </View>
             </View>
           </View>
+
+          {/* Navigation Help */}
+          <View style={styles.navHelpCard}>
+            <Text style={styles.navHelpTitle}>Navigation</Text>
+            <Text style={styles.navHelpText}>
+              Use the bottom navigation bar to quickly access:
+            </Text>
+            <View style={styles.navItemsList}>
+              <View style={styles.navItem}>
+                <Icon name="home" size={20} color="#8E8E93" />
+                <Text style={styles.navItemText}>Home - Welcome screen</Text>
+              </View>
+              <View style={styles.navItem}>
+                <Icon name="history" size={20} color="#8E8E93" />
+                <Text style={styles.navItemText}>History - Past scans</Text>
+              </View>
+              <View style={styles.navItem}>
+                <Icon name="barcode-scan" size={20} color="#FF6200" />
+                <Text style={styles.navItemText}>Scan - Camera (center)</Text>
+              </View>
+              <View style={styles.navItem}>
+                <Icon name="gift" size={20} color="#8E8E93" />
+                <Text style={styles.navItemText}>Rewards - Points & offers</Text>
+              </View>
+              <View style={styles.navItem}>
+                <Icon name="dots-horizontal" size={20} color="#8E8E93" />
+                <Text style={styles.navItemText}>More - Settings & info</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={{ height: 20 }} />
         </ScrollView>
-      </LinearGradient>
-    </MenuDrawer>
+
+      </SafeAreaView>
+    </LinearGradient>
+  </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-
-  close: {
-    position: 'absolute',
-    top: 5,
-    left: 235
-  },
-  menuopen: {
-    marginLeft: 10,
-    marginTop: 5,
-  },
-
-  sidemenu: {
-    flex: 1,
-    backgroundColor: 'white',
-    width: 280
-  },
-
-  guidecontainer: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'column',
-    gap: 10,
-    width: maxwidth,
-    marginLeft: 5,
-    marginRight: 5,
-    // backgroundColor:'black'
-  },
-  textConatiner: {
-    display: 'flex',
-    //justifyContent:'center',
-    flex: 1,
-    //alignSelf:'center',
-    marginBottom: 90,
-    // width: 370,
-    //marginLeft: 55,
-    flexDirection: 'column',
-    flex: 1,
-    padding: 20,
-    gap: 13,
-  },
-  portraitContainer: {
-    width: 700,
-    height: 600,
-    display: 'flex',
-    alignSelf: 'center',
-  },
-  menncontainer: {
-    display: 'flex',
-    //justifyContent:'center',
-    flex: 1,
-    //alignSelf:'center',
-    marginBottom: 50,
-    marginTop: 10,
-    width: 290,
-    //marginLeft:7,
-    //marginLeft: 55,
-    flexDirection: 'column',
-    //flex: 1,
-    //padding: 20,
-    gap: 3,
-    borderBottomColor: "white",
-    borderLeftColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
-    //borderRightColor:'white',
-    borderWidth: 1,
-  },
-  menubar: {
-    //backgroundColor:'#5e73e5',
-    height: 30,
-    borderRadius: 10,
-    width: 270,
-    marginLeft: 7,
-    height: 35,
-    marginTop: 20
-    //borderColor:'#2596be',
-  },
-  menubarHovered: {
-    backgroundColor: '#d9e9fb',
-    opacity: 100,
-    height: 35,
-    width: 270
-  },
-  sideimgcontainer: {
-    width: 170,
-    height: 50,
-    marginLeft: 8,
-    marginTop: 17,
-    flexDirection: 'row',
-    alignItems: 'center',
-    //borderWidth:1,
-    marginBottom: 10
-  },
-  sidetinyLogo: {
-    width: 53,
-    height: 53,
-  },
-  footerContainer: {
-    display: 'flex',
-    flex: 1,
-    width: 290,
-    flexDirection: 'row',
-    gap: 7,
-    //marginTop:200,
-    //marginLeft:7,
-    // borderBottomColor:"white",
-    // borderTopColor:'#2596be',
-    // borderWidth:1,
-    // borderLeftColor:"white",
-  },
-  footerbar: {
-    marginLeft: 7,
-    marginTop: 10
-  },
-  footerTextcontainer: {
-    // marginTop:70,
-    borderBottomColor: "white",
-    borderTopColor: 'rgb(71, 162, 228)',
-    borderWidth: 1,
-    borderLeftColor: "white",
-    width: 290,
-  },
-  guidescrollView: {
-    //marginBottom: 10,
-    // maxHeight: 630,
-  },
-  backgroundimage: {
-    flex: 1,
-    // justifyContent: 'center',
-    // width:360,
-    // height:700
-  },
   container: {
     flex: 1,
+    backgroundColor: '#000000',
+  },
+  content: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+     marginTop:3
+  },
+  scrollContent: {
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 15,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  logoWrapper: {
+    width: 160,
+    height: 160,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: '#000',
-    // marginLeft:5,
-    // marginTop:70
-    marginBottom: 5
+    padding: 10,
+    shadowColor: '#FF6200',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  imageWrapper: {
-    width: 200,
-    height: 200,
-    overflow: 'hidden', // Keep scan effect within image bounds
-    borderRadius: 10,
-  },
-  image: {
-    width: 180,
-    height: 180,
+  logoImage: {
+    width: 140,
+    height: 140,
     resizeMode: 'contain',
   },
-
-  Screentitle: {
-    fontFamily: 'Roboto',
-    color: '#3078a4',
-    fontSize: 20,
-    paddingLeft: 15,
-    paddingTop: 3,
+  stepsContainer: {
+    marginBottom: 25,
   },
-  Apptitle: {
-    fontFamily: 'Roboto',
-    color: '#3078a4',
-    fontSize: 20,
-    paddingLeft: 5,
-    paddingTop: 3
+  stepCard: {
+    position: 'relative',
+    marginBottom: 5,
   },
-  Followus: {
-    fontFamily: 'Roboto',
-    color: '#3078a4',
+  stepBadge: {
+    position: 'absolute',
+    left: 0,
+    top: 15,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  stepNumber: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  stepContent: {
+    backgroundColor: '#2C2C2E',
+    borderRadius: 16,
+    padding: 20,
+    paddingLeft: 60,
+    marginLeft: 18,
+    width:maxwidth,
+    marginRight:10
+  },
+  stepHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 10,
+  },
+  stepIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  stepDescription: {
+    fontSize: 15,
+    color: '#8E8E93',
+    lineHeight: 22,
+    marginLeft: 60,
+  },
+  connectorLine: {
+    position: 'absolute',
+    left: 18,
+    top: 51,
+    bottom: -5,
+    width: 2,
+    backgroundColor: '#3A3A3C',
+    zIndex: 1,
+  },
+  tipsCard: {
+    backgroundColor: '#2C2C2E',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    width:maxwidth,
+    marginRight:10,
+    marginLeft:10
+  },
+  tipsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  tipsTitle: {
     fontSize: 20,
-    paddingLeft: 15,
-    paddingTop: 10
-  }
-
-})
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  tipsList: {
+    gap: 14,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#8E8E93',
+    lineHeight: 22,
+  },
+  navHelpCard: {
+    backgroundColor: '#2C2C2E',
+    borderRadius: 16,
+    padding: 20,
+    width:maxwidth,
+    marginRight:10,
+    marginLeft:10
+  },
+  navHelpTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FF6200',
+    marginBottom: 12,
+  },
+  navHelpText: {
+    fontSize: 15,
+    color: '#8E8E93',
+    marginBottom: 15,
+    lineHeight: 22,
+  },
+  navItemsList: {
+    gap: 12,
+  },
+  navItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  navItemText: {
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+});

@@ -4,8 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { StatusBar } from 'react-native';
 import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera';
 import GetLocation from 'react-native-get-location'
-import { useIsFocused } from '@react-navigation/native'
-import { promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
+import { useIsFocused, useFocusEffect } from '@react-navigation/native'
+// import { promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
+// import LocationEnabler from 'react-native-location-enabler';
 import Dialog from "react-native-dialog";
 import { PermissionsAndroid } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,7 +16,7 @@ import logo from '../assets/logo.png'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 //import RNExitApp from 'react-native-exit-app';
 // import { Platform, BackHandler, Alert } from 'react-native';
-import MenuDrawer from 'react-native-side-drawer'
+//import MenuDrawer from 'react-native-side-drawer'
 import DeviceInfo, { useIsEmulator } from 'react-native-device-info'
 import { openDatabase } from 'react-native-sqlite-storage'
 import ViewShot from 'react-native-view-shot';
@@ -23,8 +24,9 @@ import ViewShot from 'react-native-view-shot';
 import LinearGradient from 'react-native-linear-gradient';
 // import translate from 'translate-google-api';
 import APISetting from './config/config'
-import { useAppTheme } from './theme'
+// import { useAppTheme } from './theme'
 import ThemeContext from './themes/ThemeContext';
+import { BackHandler } from 'react-native'; 
 
 var db = openDatabase({ name: 'r2a.db' })
 
@@ -39,38 +41,39 @@ export default function CameraView({ navigation }) {
   const [category, setcategory] = useState('')
   const [region, setregion] = useState('')
   const [imageurl, setImage] = useState('')
-  const [imagelarge, setImagelarge] = useState('')
-  const [visible, setvisible] = useState(false)
+  // const [imagelarge, setImagelarge] = useState('')
+  // const [visible, setvisible] = useState(false)
   // const [visibleimg, setvisibleimg] = useState(false)
   const [modalVisible, setmodalvisible] = useState(false)
   const [cameralaoding, setcameralaoding] = useState(false)
   const [camerview, setcamerview] = React.useState(false);
   const [value, setvalue] = React.useState('back');
-  const [button, setbutton] = React.useState(false);
-  const [devicebrand, setbarnd] = React.useState('');
+  // const [button, setbutton] = React.useState(false);
+  const [devicebrand, setBrand] = React.useState('');
   const [OS, setOS] = React.useState('');
   const [latitude, setlatitude] = React.useState('');
   const [longitude, setlongitude] = React.useState('');
   const [code_type, setcodetype] = React.useState('');
-  const [fontSize, setFontSize] = useState(15);
-  const [translatestate, Settranslatestate] = useState(false)
+  // const [fontSize, setFontSize] = useState(15);
+  // const [translatestate, Settranslatestate] = useState(false)
   // const [translatetext, Settranslatetext] = useState('')
-  const [counter, setCounter] = useState(1);
+  // const [counter, setCounter] = useState(1);
   //   const[galleryimage,Setgalleryimage]=useState('')
-  const [hoveredIndex, setHoveredIndex] = useState(null)
+  // const [hoveredIndex, setHoveredIndex] = useState(null)
   const [trochbutton, setTrochbutton] = useState("off")
   const [trochicon, setTrochicon] = useState(true)
-  const [isOpen, setIsOpen] = useState(false);
+  // const [isOpen, setIsOpen] = useState(false);
   const [responsefail, setresponsefail] = useState(false);
   const [networkerror, setnetworkerror] = useState(false);
   const [networkslow, setnetworkslow] = useState(false);
-  const [india, setIndia] = useState('')
+  // const [india, setIndia] = useState('')
   // const [loadingImage, setloading] = useState('')
   // const [popupdialog, setpopupdialog] = useState(false)
   const camera = useRef(null);
-  const devices = useCameraDevice(value)
-  const screenShot = useRef();
-  const theme = useAppTheme();
+ // const devices = useCameraDevice(value)
+ const device = useCameraDevice(value)
+  //const screenShot = useRef();
+  // const theme = useAppTheme();
   const { isDarkMode } = useContext(ThemeContext);
 
   // camera lifecycle & scanner guard
@@ -82,83 +85,54 @@ export default function CameraView({ navigation }) {
   const abortCtrl = useRef(null);
   useEffect(() => () => { if (abortCtrl.current) abortCtrl.current.abort?.(); }, []);
 
+        // Reset camera when screen comes into focus (e.g., returning from ScanResultScreen)
+        useFocusEffect(
+          React.useCallback(() => {
+            console.log('Camera screen focused - Resetting scan state');
+            
+            // Only reset if we have a scanned code (coming back from result screen)
+            if (datacode !== '') {
+              resetCamera();
+            }
+            
+            return () => {
+              // Cleanup when screen loses focus
+              console.log('Camera screen losing focus');
+            };
+          }, [datacode])
+        );
+  // const handeltakeSCreenshot = () => {
+ 
 
-    const panResponder = () => {
-    let dx = 0;
-
-    return PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        const { dx, dy } = gestureState;
-        const isHorizontalSwipe = Math.abs(dx) > Math.abs(dy);
-        if (isHorizontalSwipe) {
-          setScrollEnabled(false); // Disable ScrollView scroll
-        }
-        return isHorizontalSwipe;
-      },
-     
-      onPanResponderRelease: () => {
-        setScrollEnabled(true); // Re-enable scrolling
-         if (dx > 50) {
-          // Swipe right threshold, you can adjust this value
-          handleDeleteItem(id);
-        }
-
-      },
-      onPanResponderTerminate: () => {
-        setScrollEnabled(true); // Also re-enable if interrupted
-      },
-    });
-  };
-
-
-
-  // const nopopup=async()=>{
-  //     // const photos= await camera.current.takePhoto();
-  //     setimageview(`file://${photos.path}`)
-  //     setvisibleimg(true)
+  //   setdatacode('')
+  //   setproduct("");
+  //   setproductname("");
+  //   setdes('')
+  //   setregion('');
+  //   setImage('');
+  //   setvisible(false)
+  //   setcamerview(true)
+  //   setvalue('back')
   // }
 
-  // const cameracapture = async()=>{
-  //   const photo = await camera.current.takePhoto()
+  // const popupsucesss = () => {
+  //   //setpopupdialog(true)
+  //   // setTimeout(() => {
+  //   //   setpopupdialog(false)
+  //   // }, 3000)
+  //   setdatacode('')
+  //   setproduct("");
+  //   setproductname("");
+  //   setdes('')
+  //   setregion('');
+  //   setImage('');
+  //   setvisible(false)
+  //   setcamerview(true)
+  //   setvalue('back')
   // }
-
-  const handeltakeSCreenshot = () => {
-    // screenShot.current.capture().then(uri => {
-    //   console.log('URI:', uri);
-    // });
-    // setpopupdialog(true)
-    // setTimeout(() => {
-    //   setpopupdialog(false)
-    // }, 2000)
-
-    setdatacode('')
-    setproduct("");
-    setproductname("");
-    setdes('')
-    setregion('');
-    setImage('');
-    setvisible(false)
-    setcamerview(true)
-    setvalue('back')
-  }
-
-  const popupsucesss = () => {
-    //setpopupdialog(true)
-    // setTimeout(() => {
-    //   setpopupdialog(false)
-    // }, 3000)
-    setdatacode('')
-    setproduct("");
-    setproductname("");
-    setdes('')
-    setregion('');
-    setImage('');
-    setvisible(false)
-    setcamerview(true)
-    setvalue('back')
-  }
 
   const { width, height } = useWindowDimensions();
+
 
   const trochon = () => {
     setTrochbutton("on")
@@ -170,161 +144,190 @@ export default function CameraView({ navigation }) {
     setTrochicon(true)
   }
 
-  // const opentranslateform =async()=>{
-  //   Settranslatestate(true)
-  //   try {
-  //     const result = await translate(["Hi", "How are you?", `I'm fine`], {
-  //       tld: "cn",
-  //       to: "vi",
-  //     });
-  //     console.log(result);
-  //   } catch (error) {
-  //     console.error("Translation error:", error);
-  //   }
-  // }
-
   const closeError = () => {
     setresponsefail(false)
     setcamerview(true)
+    setvalue('back')
     setdatacode('')
-    setbutton(false)
+    navigation.navigate('Home');
+    // setbutton(false)
   }
 
   const networkError = async () => {
-    setnetworkerror(false)
-    await AsyncStorage.removeItem('access_token',);
-    //RNExitApp.exitApp();
-    exitApp();
-  }
+    setnetworkerror(false);
+    await AsyncStorage.removeItem('access_token');
+    if (Platform.OS === 'android') BackHandler.exitApp();
+    else navigation.navigate('Home'); // iOS: don't programmatically quit
+ }
 
   const closenetworkslow = async () => {
     setnetworkslow(false)
   }
 
+  // const handellocation = async () => {
+
+  //   if (Platform.OS === 'android') {
+  //     try {
+  //       const enableResult = await promptForEnableLocationIfNeeded();
+  //       console.log('enableResult', enableResult)
+  //       let brand = DeviceInfo.getBrand()
+  //       // let country = DeviceInfo.getCountryCode()
+  //       console.log(brand)
+  //       //  console.log('country',country)
+  //       setBrand(brand)
+  //       setOS(Platform.OS)
+  //     }
+  //     catch (error) {
+  //       if (error instanceof Error) {
+  //         console.error(error.message);
+  //       }
+  //     }
+  //   }
+
+  //   GetLocation.getCurrentPosition({
+  //     enableHighAccuracy: true,
+  //     // timeout: 60000,
+  //   })
+  //     .then(location => {
+  //       setlatitude(location.latitude);
+  //       setlongitude(location.longitude)
+  //       country(location.latitude, location.longitude)
+  //       console.log('loaction', location)
+  //     })
+  //     .catch(error => {
+  //       const { code, message } = error;
+  //       console.warn(code, message);
+  //     })
+
+  //   // DeviceCountry.getCountryCode()
+  //   // .then((result) => {
+  //   //   setIndia(result.code)
+  //   //   console.log(result.code)
+  //   // })
+  //   // .catch((e) => {
+  //   //   console.log(e);
+  //   // });
+
+  // }
+
+
   const handellocation = async () => {
 
-    if (Platform.OS === 'android') {
-      try {
-        const enableResult = await promptForEnableLocationIfNeeded();
-        console.log('enableResult', enableResult)
-        let brand = DeviceInfo.getBrand()
-        // let country = DeviceInfo.getCountryCode()
-        console.log(brand)
-        //  console.log('country',country)
-        setbarnd(brand)
-        setOS(Platform.OS)
-      }
-      catch (error) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        }
-      }
+  if (Platform.OS === 'android') {
+
+    try {
+
+      let brand = DeviceInfo.getBrand();
+      setBrand(brand);
+      setOS(Platform.OS);
+      console.log('Device brand:', brand);
+    } catch (error) {
+      console.error('Device info error:', error);
+
     }
-
-    GetLocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      // timeout: 60000,
-    })
-      .then(location => {
-        setlatitude(location.latitude);
-        setlongitude(location.longitude)
-        country(location.latitude, location.longitude)
-        console.log('loaction', location)
-      })
-      .catch(error => {
-        const { code, message } = error;
-        console.warn(code, message);
-      })
-
-    // DeviceCountry.getCountryCode()
-    // .then((result) => {
-    //   setIndia(result.code)
-    //   console.log(result.code)
-    // })
-    // .catch((e) => {
-    //   console.log(e);
-    // });
 
   }
 
+  // Try to get location
 
-  const country = async (latitude, longitude) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-        {
-          method: 'GET',
-          headers: {
-            'User-Agent': 'com.verify2buy/1.0 (neelkrishnan999@gmail.com)',
-            'Accept': 'application/json',
-          },
-        }
+   try {
+
+    const location = await GetLocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 30000, // 30 second timeout
+    });
+
+    setlatitude(location.latitude);
+    setlongitude(location.longitude);
+    console.log('Location acquired:', location);
+
+  } 
+  catch (error) {
+
+    const { code, message } = error;
+    console.warn('Location error:', code, message);
+    // Show user-friendly alert if location is disabled
+
+    if (code === 'UNAVAILABLE' || code === 'TIMEOUT') {
+      Alert.alert(
+        'Location Required',
+
+        'Please enable location services in your device settings to verify products.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Open Settings', 
+
+            onPress: () => {
+              if (Platform.OS === 'android') {
+                Linking.openSettings();
+              }
+            }
+          }
+        ]
 
       );
-
-      if (response) {
-        const data = await response.json();
-        const rescoun = data.address
-        setIndia(rescoun.country)
-      }
-    } catch (error) {
-      console.log(error)
     }
-  };
+  }
+};
+
+
+
+
+  // const country = async (latitude, longitude) => {
+  //   try {
+  //     const response = await fetch(
+  //       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+  //       {
+  //         method: 'GET',
+  //         headers: {
+  //           'User-Agent': 'com.verify2buy/1.0 (neelkrishnan999@gmail.com)',
+  //           'Accept': 'application/json',
+  //         },
+  //       }
+
+  //     );
+
+  //     if (response) {
+  //       const data = await response.json();
+  //       const rescoun = data.address
+  //       setIndia(rescoun.country)
+  //     }
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // };
 
 
   const tokensubmit = async () => {
-    let authenticatedata = {
-      method: 'POST',
-      credentials: 'same-origin',
-      mode: 'same-origin',
-      body: JSON.stringify({
-        "username": "mgx_000018",
-        "password": "qwerty"
-      }),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-
-    }
-
-    try {
-      // const response = await fetch("http://demo.solfordoc.com:8080/anticounterfeit/api/token", authenticatedata);
-       const response = await fetch("https://universumgs.com/anticounterfeit/api/token", authenticatedata);
-      const res = await response.json();
-      if (res) {
-        await AsyncStorage.setItem(
-          'access_token',
-          res.token
-        );
-        // navigation.navigate('Scanner')
-        console.log('res', res.token)
-      }
-    } catch (error) {
-      console.log(error)
-      setnetworkerror(true)
+  let authenticatedata = {
+    method: 'POST',
+    credentials: 'same-origin',
+    mode: 'same-origin',
+    body: JSON.stringify({
+      "username": "mgx_000018",
+      "password": "qwerty"
+    }),
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
     }
   }
 
-  //   const getIp = async()=>{
-  //     try {
-  //       const response = await fetch ('https://ipapi.co/json/');
-  //       const res = await response.json();
-  //       if(res)
-  //       {
-  //         console.log(res)
-  //         setcountry_name(res.country_name)
-  //         setcity(res.city)
-  //       }
-  //     }
-  //     catch(error){
-  //       console.log('error IP')
-  //     }
-  //    }
-
-
-
+  try {
+    // FIX THIS LINE - use full URL:
+    const response = await fetch("https://api.universumgs.com/api/token", authenticatedata);
+    const res = await response.json();
+    if (res) {
+      await AsyncStorage.setItem('access_token', res.token);
+      return res.token;
+    }
+  } catch (error) {
+    console.log('❌ Token error:', error);
+    setnetworkerror(true);
+    return null;
+  }
+}
 
   const requestPermissions = async () => {
     const granted = await PermissionsAndroid.request(
@@ -337,38 +340,65 @@ export default function CameraView({ navigation }) {
     }
   };
 
-
-
-    const codeScanner = useCodeScanner({
-    codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39','upc-a'],
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr','ean-13','ean-8','upc-e','code-128','code-39'], // see note #4
     onCodeScanned: (codes) => {
       const first = codes?.[0];
       if (!first?.value) return;
       if (scanningRef.current) return;
+
+      const minLength = first.type === 'qr' ? 3 : 8; // QR can be shorter, barcodes need at least 8 digits
+      if (first.value.length < minLength) {
+        console.log('Ignoring partial scan:', first.value);
+        return;
+      }
+
+      
       scanningRef.current = true;
 
       setproduct(''); setproductname(''); setdes(''); setregion('');
-      setImage(''); setcategory(''); setdatacode(first.value); setcodetype(first.type);
+      setImage(''); setcategory('');
+      setdatacode(first.value); 
+      setcodetype(first.type);
 
-      // Optional: confirm before opening external links
-      // if (/^https?:/i.test(first.value)) { Linking.openURL(first.value); }
+    //   submit(first.value, first.type)
+    //     .finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
+         submit(first.value, first.type)
+      .finally(() => setTimeout(() => { scanningRef.current = false; }, 2000)); // Increased from 800ms to 2000ms
+      }
 
-      submit().finally(() => setTimeout(() => { scanningRef.current = false; }, 800));
-    }
   })
 
+const resetCamera = () => {
+  setdatacode('');
+  setproduct('');
+  setproductname('');
+  setdes('');
+  setcategory('');
+  setregion('');
+  setImage('');
+  setcamerview(true);
+  setCameraActive(true);
+  setvalue('back');
+  scanningRef.current = false;
+};
 
-
-  const submit = async () => {
-  if (!datacode) return;
-  setmodalvisible(true);
+const submit = async (code, scannedType) => {
+  if (!code) { 
+       // ensure the guard doesn't permanently block scanning
+       scanningRef.current = false; 
+       return; 
+    }
+  
+  //setmodalvisible(true);
   setcamerview(false);
   setCameraActive(false);
+  setcameralaoding(true); 
 
   const payload = {
-    code: datacode,
+    code,
     encryptResponse: false,
-    codeType: code_type,
+    codeType: scannedType,
     deviceType: OS,
     deviceModel: devicebrand,
     latitude, longitude,
@@ -377,13 +407,15 @@ export default function CameraView({ navigation }) {
     country: ''
   };
 
+
+
   if (abortCtrl.current) abortCtrl.current.abort();
   abortCtrl.current = new AbortController();
   const signal = abortCtrl.current.signal;
 
   try {
     const token = await AsyncStorage.getItem('access_token');
-    const url = 'https://universumgs.com/anticounterfeit/api/upc/product/search';
+    const url = 'https://api.universumgs.com/api/upc/product/search';
     let res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -408,19 +440,20 @@ export default function CameraView({ navigation }) {
         body: JSON.stringify(payload),
         signal
       });
+    
     }
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     handleVerifyResult(json);
+    //setmodalvisible(false);
+      setcameralaoding(false);
   } catch (e) {
     console.log('verify error', e);
+      setcameralaoding(false);
     setresponsefail(true);
-  } finally {
-    setmodalvisible(false);
-    setcamerview(true);
-    setCameraActive(isFocused);
-  }
+  } 
+
 };
 
 function handleVerifyResult(res) {
@@ -428,69 +461,35 @@ function handleVerifyResult(res) {
     setresponsefail(true);
     return;
   }
-  setproduct(res.product.brand);
-  setproductname(res.product.name);
-  setcategory(res.product.category);
-  if (res.product.description !== "") {
-    setdes(res.product.description);
+
+  
+  // Validate that we have valid product data before navigating
+  // Check if product exists and has at least a code or name
+
+  if (!res || (!res.code && !res.product?.name && !res.product?.ean)) {
+    console.log('Invalid product data received:', res);
+    setresponsefail(true);
+    return;
   }
-  else {
-    setdes('')
-  }
-  if (res.product.imageUrl !== "" && res.product.imageUrl !== null) {
-    setImage(res.product.imageUrl);
-    //setImage('');
-  }
-  else {
-    setImage('');
-  }
-  setregion(res.product.region);
-  setvisible(true);
+  
   saveHistoryData(res);
-  //setCounter(prev => { const v = prev + 1; saveRewards(v); return v; });
+  //setcamerview(false)
+  navigation.navigate('ScanResultScreen', { result: res });
 }
 
-
-  // const saveRewards = async (updatedCounter) => {
-  //   try {
-  //     await AsyncStorage.setItem('rewards', updatedCounter.toString());
-  //     rewardsData()
-  //   } catch (error) {
-  //     console.error('Failed to save rewards:', error);
-  //   }
-  // };
-
-  // const rewardsData = async () => {
-  //   const rewards = await AsyncStorage.getItem('rewards');
-  //   console.log('points', rewards);
-  //   db.transaction(function (tx) {
-  //     tx.executeSql(
-  //       'INSERT INTO r2a_rewardstable (rewards_points) VALUES (?)',
-  //       [rewards],
-  //       (tx, results) => {
-  //         console.log('Results', results.rowsAffected);
-  //         if (results.rowsAffected > 0) {
-  //           console.log('Success', 'rewards inserted successfully');
-  //         } else {
-  //           console.log('Error', 'Insertion failed');
-  //         }
-  //       },
-  //       (tx, error) => {
-  //         console.error('Insert Error:', error);
-  //       }
-  //     );
-  //   });
-  // }
-
-  const saveHistoryData = (res) => {
+   const saveHistoryData = (res) => {
     if (res.product !== null) {
       let barno = res.product.ean
       let name = res.product.name
       let catgname = res.product.category
+      let img = res.product.imageUrl
+      let brand = res.product.brand
+      let description = res.product.description
+      let region = res.product.region
       db.transaction(function (tx) {
         tx.executeSql(
-          'INSERT INTO r2a_usertable ( barcode, prodname,category) VALUES (?,?,?)',
-          [barno, name, catgname],
+          'INSERT INTO verify2buy_usertable ( barcode, prodname,category,image,brandname,description,region) VALUES (?,?,?,?,?,?,?)',
+            [barno, name, catgname,img,brand,description,region],
           (tx, results) => {
             console.log('Results', results.rowsAffected);
             if (results.rowsAffected > 0) {
@@ -507,283 +506,198 @@ function handleVerifyResult(res) {
     }
   };
 
+  
 
-  // const openImage = () => {
-  //   setvisibleimg(true)
-  // }
+//   const menucontent = () => {
+//     return (
+//       <View style={styles.sidemenu}>
+//         {navigationView()}
+//       </View>
+//     )
+//   }
 
-  // const addCart = () => {
-  //   Alert.alert('', 'Product added to your cart', [
-  //     { text: 'OK', onPress: () => console.log('OK Pressed') },
-  //   ]);
-  // }
+//   const naviagte = (id) => {
+//     if (id === 1) {
+//       //navigation.navigate('Scanner')
+//       navigation.navigate('Home')
+//       setIsOpen(false)
+//     }
+//     if (id === 2) {
+//       navigation.navigate('RewardScreen')
+//       setIsOpen(false)
+//     }
+//     if (id === 3) {
+//       navigation.navigate('History')
+//       setIsOpen(false)
+//     }
+//     if (id === 4) {
+//       navigation.navigate('Guide')
+//       setIsOpen(false)
+//     }
+//     if (id === 5) {
+//       navigation.navigate('Privacy Policy')
+//       setIsOpen(false)
+//     }
+//      if (id === 6) {
+//       navigation.navigate('Settings')
+//       setIsOpen(false)
+//     }
+//      if (id === 7) {
+//       navigation.navigate('Logout')
+//       setIsOpen(false)
+//     }
 
-  const increaseFontSize = () => {
-    setFontSize(prevSize => prevSize + 2);
-  };
+//   }
 
-  const decreaseFontSize = () => {
-    setFontSize(prevSize => prevSize - 2);
-  };
-  //  const colsepopup=()=>{
-  //   setpopupdialog(false)
-  //  }
-  const closeicon = () => {
-    setdatacode('')
-    setproduct('');
-    setproductname('');
-    setdes('')
-    setregion('');
-    setImage('');
-    setcategory('');
-    setvisible(false)
-    setFontSize(15)
-    setcamerview(true)
-    setbutton(false)
-    setvalue('back')
-  }
+//  const menuItems = [
+//     //  { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+//       { id: 1, label: 'Home', icon: 'arch', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+//      { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
+//     { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+//     { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//      { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//   ];
 
-  const closeicontranslate = () => {
-    Settranslatestate(false)
-  }
-
-  // const languageselect =(item)=>{
-  //   console.log(item)
-  //   if(item === "Tamil")
-  //   {
-  //   Settranslatetext("ta")
-  //   }
-  //   translateapi()
-  // }
-
-  // const translateapi=async()=>{
-  //   alert('yes')
-  //   const result = await translate(['Hi', 'How are you?', `I'm fine`], {
-  //     tld: "cn",
-  //     to: "vi",
-  //   });
-  //   console.log(result)
-  // }
-  // const translateapi = async () => {
-
-  //     const options = {
-  //     method: 'GET',
-  //     url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-  //     params: {text:productname , to: translatetext, from: 'English'},
-  //     headers: {
-  //         'X-RapidAPI-Key': '7fb15711b0mshdcf75f9ebce235ep112814jsne23cb9110ba4',
-  //         'X-RapidAPI-Host': 'nlp-translation.p.rapidapi.com'
-  //     }
-  //     };
-
-  //     const response = await axios.request(options).catch(function (error) {
-  //         console.error(error);
-  //     });
-
-  //     if (response.status !== 200) {
-  //         console.log(response);
-  //         throw new Error("Translate call failed. Response status: " + response.status);
-  //     }
-
-  //     return response.data;
-  // }
-  // const rewards = async()=>{
-  //   navigation.navigate('Rewards')
-  // }
-
-  // const logout = async()=>{
-  //   await AsyncStorage.removeItem('access_token',);
-  // //console.log('access_token',tokenexpier)
-  //   RNExitApp.exitApp();
-  //  }
-
-  const menucontent = () => {
-    return (
-      <View style={styles.sidemenu}>
-        {navigationView()}
-      </View>
-    )
-  }
-
-  const naviagte = (id) => {
-    if (id === 1) {
-      navigation.navigate('Scanner')
-      setIsOpen(false)
-    }
-    if (id === 2) {
-      navigation.navigate('RewardScreen')
-      setIsOpen(false)
-    }
-    if (id === 3) {
-      navigation.navigate('History')
-      setIsOpen(false)
-    }
-    if (id === 4) {
-      navigation.navigate('Guide')
-      setIsOpen(false)
-    }
-    if (id === 5) {
-      navigation.navigate('Privacy Policy')
-      setIsOpen(false)
-    }
-     if (id === 6) {
-      navigation.navigate('Settings')
-      setIsOpen(false)
-    }
-     if (id === 7) {
-      navigation.navigate('Logout')
-      setIsOpen(false)
-    }
-
-  }
-
-
- const menuItems = [
-     { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'},
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
-
-  const menuItemsIndia = [
-    { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-     { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
-    { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-     { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
+//   const menuItemsIndia = [
+//     // { id: 1, label: 'Scanner', icon: 'barcode-scan', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+//       { id: 1, label: 'Home', icon: 'arch', iconColor: !isDarkMode ? 'rgb(71, 162, 228)' : '#1D211D' },
+//      { id: 2, label: 'Rewards', icon: 'ticket-percent-outline', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+//     { id: 3, label: 'History', icon: 'history', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 4, label: 'App Guide', icon: 'book-open-variant', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D' },
+//     { id: 5, label: 'Privacy Policy', icon: 'shield-account', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//      { id: 6, label: 'Settings', icon: 'cog', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 7, label: 'Close App', icon: 'logout', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//   ];
 
 
 
-  const footermenuItems = [
-    { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-    { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
-  ];
+//   const footermenuItems = [
+//     { id: 1, icon: 'google-play', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 2, icon: 'apple', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 3, icon: 'linkedin', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 4, icon: 'file-excel-box', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//     { id: 5, icon: 'instagram', iconColor: !isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'  },
+//   ];
 
 
-  const appicon = () => {
-    navigation.navigate('Home')
-  }
+//   const appicon = () => {
+//     navigation.navigate('Home')
+//   }
 
-    const navigationView = () => (
-      <>
-        <ScrollView>
-          <View style={styles.close}>
-            <TouchableOpacity onPress={closeDrawer}>
-              <Icon
-                name="close-circle"
-                size={25}
-                color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.sideimgcontainer}>
-            <Image
-              style={styles.sidetinyLogo}
-              source={!isDarkMode ?  logo : logo}
-            />
-            <TouchableOpacity onPress={appicon}>
-              <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
-            </TouchableOpacity>
-          </View>
-          {india === "India" || "in" ? (
-            <View style={styles.menncontainer}>
-              {menuItemsIndia.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.menubar,
-                    hoveredIndex === index && styles.menubarHovered,
-                  ]}
-                  onPressIn={() => setHoveredIndex(index)}
-                  onPressOut={() => setHoveredIndex(null)}
-                  onPress={() => naviagte(item.id)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon
-                      name={item.icon}
-                      size={25}
-                      color={item.iconColor}
-                      style={{ marginLeft: 10, marginTop: 5 }}
-                    />
-                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.menncontainer}>
-              {menuItems.map((item, index) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.menubar,
-                    hoveredIndex === index && styles.menubarHovered,
-                  ]}
-                  onPressIn={() => setHoveredIndex(index)}
-                  onPressOut={() => setHoveredIndex(null)}
-                  onPress={() => naviagte(item.id)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon
-                      name={item.icon}
-                      size={25}
-                      color={item.iconColor}
-                      style={{ marginLeft: 10, marginTop: 5 }}
-                    />
-                    <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-          <View style={styles.footerTextcontainer}>
-            <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
-          </View>
-          <View style={styles.footerContainer}>
-            {footermenuItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.footerbar}
-              // style={[
-              //   styles.menubar,
-              //   hoveredIndex === index && styles.menubarHovered, 
-              // ]}
-              // onPressIn={() => setHoveredIndex(index)}
-              // onPressOut={() => setHoveredIndex(null)}
-              //onPress={()=>naviagtion(index)}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon
-                    name={item.icon}
-                    size={25}
-                    color={item.iconColor}
-                    style={{ marginLeft: 10, marginTop: 5 }}
-                  />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </>
-    );
+//     const navigationView = () => (
+//       <>
 
 
-  const openDrawer = () => {
-    setIsOpen(true)
-  }
+//         <ScrollView>
+//           <View style={styles.close}>
+//             <TouchableOpacity onPress={closeDrawer}>
+//               <Icon
+//                 name="close-circle"
+//                 size={25}
+//                 color= {!isDarkMode ?  'rgb(71, 162, 228)' : '#1D211D'}
+//               />
+//             </TouchableOpacity>
+//           </View>
+//           <View style={styles.sideimgcontainer}>
+//             <Image
+//               style={styles.sidetinyLogo}
+//               source={!isDarkMode ?  logo : logo}
+//             />
+//             <TouchableOpacity onPress={appicon}>
+//               <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 1, paddingTop: 3 }}>Verify2Buy</Text>
+//             </TouchableOpacity>
+//           </View>
+//           {india === "India" || india === "in" ? (  
+//             <View style={styles.menncontainer}>
+//               {menuItemsIndia.map((item, index) => (
+//                 <TouchableOpacity
+//                   key={item.id}
+//                   style={[
+//                     styles.menubar,
+//                     hoveredIndex === index && styles.menubarHovered,
+//                   ]}
+//                   onPressIn={() => setHoveredIndex(index)}
+//                   onPressOut={() => setHoveredIndex(null)}
+//                   onPress={() => naviagte(item.id)}
+//                 >
+//                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+//                     <Icon
+//                       name={item.icon}
+//                       size={25}
+//                       color={item.iconColor}
+//                       style={{ marginLeft: 10, marginTop: 5 }}
+//                     />
+//                     <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+//                   </View>
+//                 </TouchableOpacity>
+//               ))}
+//             </View>
+//           ) : (
+//             <View style={styles.menncontainer}>
+//               {menuItems.map((item, index) => (
+//                 <TouchableOpacity
+//                   key={item.id}
+//                   style={[
+//                     styles.menubar,
+//                     hoveredIndex === index && styles.menubarHovered,
+//                   ]}
+//                   onPressIn={() => setHoveredIndex(index)}
+//                   onPressOut={() => setHoveredIndex(null)}
+//                   onPress={() => naviagte(item.id)}
+//                 >
+//                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+//                     <Icon
+//                       name={item.icon}
+//                       size={25}
+//                       color={item.iconColor}
+//                       style={{ marginLeft: 10, marginTop: 5 }}
+//                     />
+//                     <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 3, }}>{item.label}</Text>
+//                   </View>
+//                 </TouchableOpacity>
+//               ))}
+//             </View>
+//           )}
+//           <View style={styles.footerTextcontainer}>
+//             <Text style={{ fontFamily: 'Roboto', color: !isDarkMode ?  '#3078a4' : '#1D211D', fontSize: 20, paddingLeft: 15, paddingTop: 10 }}>Follow us on</Text>
+//           </View>
+//           <View style={styles.footerContainer}>
+//             {footermenuItems.map((item, index) => (
+//               <TouchableOpacity
+//                 key={item.id}
+//                 style={styles.footerbar}
+//               // style={[
+//               //   styles.menubar,
+//               //   hoveredIndex === index && styles.menubarHovered, 
+//               // ]}
+//               // onPressIn={() => setHoveredIndex(index)}
+//               // onPressOut={() => setHoveredIndex(null)}
+//               //onPress={()=>naviagtion(index)}
+//               >
+//                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+//                   <Icon
+//                     name={item.icon}
+//                     size={25}
+//                     color={item.iconColor}
+//                     style={{ marginLeft: 10, marginTop: 5 }}
+//                   />
+//                 </View>
+//               </TouchableOpacity>
+//             ))}
+//           </View>
+//         </ScrollView>
+//       </>
+//     );
 
-  const closeDrawer = () => {
-    setIsOpen(false)
-  }
+//   const openDrawer = () => {
+//     setIsOpen(true)
+//   }
+
+//   const closeDrawer = () => {
+//     setIsOpen(false)
+//   }
 
   useEffect(() => {
     tokensubmit()
@@ -792,18 +706,17 @@ function handleVerifyResult(res) {
   }, [])
 
 
-
-  useEffect(() => {
+ useEffect(() => {
     db.transaction(function (txn) {
       txn.executeSql(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='r2a_usertable'",
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='verify2buy_usertable'",
         [],
         function (tx, res) {
           console.log('item', res.rows.length);
           if (res.rows.length === 0) {
-            txn.executeSql('DROP TABLE IF EXISTS r2a_usertable', []);
-            txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS r2a_usertable(pro_id INTEGER PRIMARY KEY AUTOINCREMENT, barcode VARCHAR(30), prodname VARCHAR(100),category VARCHAR(100))',
+            txn.executeSql('DROP TABLE IF EXISTS verify2buy_usertable', []);
+              txn.executeSql(
+              'CREATE TABLE IF NOT EXISTS verify2buy_usertable(pro_id INTEGER PRIMARY KEY AUTOINCREMENT, barcode VARCHAR(30), prodname VARCHAR(200),category VARCHAR(100),image VARCHAR(500),brandname VARCHAR(200),description VARCHAR(500),region VARCHAR(50))',
               [],
             );
           }
@@ -811,29 +724,32 @@ function handleVerifyResult(res) {
       );
     })
   }, [])
+  
+
+
+
+  // useEffect(() => {
+  //   db.transaction(function (txn) {
+  //     txn.executeSql(
+  //       "SELECT name FROM sqlite_master WHERE type='table' AND name='r2a_rewardstable'",
+  //       [],
+  //       function (tx, res) {
+  //         console.log('item', res.rows.length);
+  //         if (res.rows.length === 0) {
+  //           txn.executeSql('DROP TABLE IF EXISTS r2a_rewardstable', []);
+  //           txn.executeSql(
+  //             'CREATE TABLE IF NOT EXISTS r2a_rewardstable(rewards_id INTEGER PRIMARY KEY AUTOINCREMENT, rewards_points VARCHAR(100) )',
+  //             [],
+  //           );
+  //         }
+  //       },
+  //     );
+  //   })
+  // }, [])
 
 
   useEffect(() => {
-    db.transaction(function (txn) {
-      txn.executeSql(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='r2a_rewardstable'",
-        [],
-        function (tx, res) {
-          console.log('item', res.rows.length);
-          if (res.rows.length === 0) {
-            txn.executeSql('DROP TABLE IF EXISTS r2a_rewardstable', []);
-            txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS r2a_rewardstable(rewards_id INTEGER PRIMARY KEY AUTOINCREMENT, rewards_points VARCHAR(100) )',
-              [],
-            );
-          }
-        },
-      );
-    })
-  }, [])
-
-
-  useEffect(() => {
+    setdatacode('')
     setcameralaoding(true)
   }, [])
 
@@ -843,64 +759,39 @@ function handleVerifyResult(res) {
       setcamerview(true)
       setvalue('back')
       setcameralaoding(false)
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, [])
 
-  useEffect(() => {
-    requestPermissions()
-  }, [])
+ useEffect(() => {
+   (async () => {
+     if (Platform.OS === 'ios') {
+       const status = await Camera.requestCameraPermission();
+       if (status !== 'granted') {
+         Alert.alert('Camera permission required',
+           'Please enable camera access in Settings to scan codes.');
+       }
+     } else {
+       requestPermissions();
+     }
+   })();
+ }, []);
 
-
-
-  // useEffect(() => {
-  //     findFcmToken();
-  //     reagister()
-  //   }, []) 
 
   return (
     <>
-      <MenuDrawer
-        open={isOpen}
-        position={'left'}
-        drawerContent={menucontent()}
-        drawerPercentage={300}
-        animationTime={250}
-        overlay={true}
-        opacity={0.4}
-      >
-        {/* <ImageBackground source={glass} resizeMode="cover" style={styles.backgroundimage}> */}
-        <LinearGradient colors={!isDarkMode ? ["#88def1", "#04467e"] : ["#1D211D", "#4F4E48"]} style={{ flex: 1, }} >
-          {/* <ScrollView> */}
+
+      <LinearGradient colors={["#1A1A1A", "#0A0A0A"]} style={{ flex: 1, }} >
           <SafeAreaView style={{ flex: 1, }}>
             <SafeAreaProvider>
               <SafeAreaView >
-                {/* <View style={styles.translate}>
-       <TouchableOpacity onPress={translate}>
-        <Text style={{textAlign:'center',color:'white',fontSize:15}}>Translate
-        <Image
-            style={styles.transLogo}
-            source={transimg}
-            />
-            </Text>
-       </TouchableOpacity>
-        </View> */}
-                {/* <View style={[styles.menuopen, { backgroundColor: theme.colors.card }]}>
-        <TouchableOpacity onPress={openDrawer}>
-          <Icon
-            name="menu-open"
-            size={27}
-            color="#FFFF"
-          />
-        </TouchableOpacity>
-      </View> */}
-                {camerview === true ? (
+                {camerview === true && device ? (
                   <>
-                    <View style={StyleSheet.container}>
+                    <View style={styles.container}>
                       <Camera
                         ref={camera}
                         style={[styles.absoluteFill, { width, height }]}
-                        device={devices}
+                        device={device}
                         isActive={cameraActive}
                         codeScanner={codeScanner}
                         torch={trochbutton}
@@ -908,26 +799,37 @@ function handleVerifyResult(res) {
                       // frameProcessor={frameProcessor}
                       />
                     </View>
-                    <View style={[styles.trochConatiner, { backgroundColor: theme.colors.card }]}>
+                  <View style={styles.cameraControlsRow}>
+                    {/* Torch Button */}
+                    <View style={styles.trochConatiner}>
                       {trochicon === true ? (
                         <TouchableOpacity onPress={trochon}>
-                          <Icon name='flashlight-off' size={25} color={theme.colors.primary} />
+                          <Icon name='flashlight-off' size={25} color="#ffffffff" />
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity onPress={trochoff}>
-                          <Icon name='flashlight' size={25} color={theme.colors.primary} />
+                          <Icon name='flashlight' size={25} color="#ffffffff" />
                         </TouchableOpacity>
                       )}
                     </View>
-                    <View style={[styles.menuopen, { backgroundColor: theme.colors.card }]}>
+                      {/* Reset Button - only shows when barcode is scanned */}
+                        {datacode !== "" && (
+                          <View style={styles.resetContainer}>
+                            <TouchableOpacity onPress={resetCamera}>
+                              <Icon name='refresh' size={25} color="#ffffffff" />
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+              {/* <View style={styles.menuopen}>
                       <TouchableOpacity onPress={openDrawer}>
                         <Icon
                           name="menu-open"
                           size={27}
-                          color={theme.colors.primary}
+                          color="#ffffffff"
                         />
                       </TouchableOpacity>
-                    </View>
+                    </View> */}
                   </>
                 ) : (
                   <></>
@@ -944,240 +846,67 @@ function handleVerifyResult(res) {
                 </View>
               </SafeAreaView>
             </SafeAreaProvider>
-            <Modal visible={visible} animationType="slide" transparent={true}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalOverlay}>
-                  <View style={styles.modalView}>
-                    <ScrollView style={styles.oveallscrollView} showsVerticalScrollIndicator={false}>
-                      <View style={styles.scalebutton} >
-                        <TouchableOpacity onPress={increaseFontSize}>
-                          <Text style={[styles.buttonText, { backgroundColor: theme.colors.primary }]}>A+</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={decreaseFontSize}>
-                          <Text style={[styles.buttonText, { backgroundColor: theme.colors.primary }]}>A-</Text>
-                        </TouchableOpacity>
-                        {/* <TouchableOpacity onPress={opentranslateform} style={styles.translateicon} >
-                        <Icon
-                          name="google-translate"
-                          size={25}
-                          color={theme.colors.primary}
-                        />
-                      </TouchableOpacity> */}
-                        <TouchableOpacity onPress={closeicon} style={styles.closeicon} >
-                          <Icon
-                            name="close-circle"
-                            size={25}
-                            color={theme.colors.primary}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      {/* <ViewShot
-                        ref={screenShot}
-                        options={{
-                          fileName: "img",
-                          format: 'jpg',
-                          quality: 1,
-                          result: 'tmpfile'
-                        }}> */}
-                        <View style={{ marginTop: 10 }}>
-                          <Text style={styles.productheading}>Product Details :</Text>
-                          <Text style={styles.headgrid}>Brand: </Text>
-                          {product === "" || product === null ? (
-                            <Text style={styles.textgridfail}>No Brand Found</Text>
-                          ) : (
-                            <Text style={[styles.textgridbrand, { fontSize }]}>{product}</Text>
-                          )}
-                          <Text style={styles.headgrid}>Product Name: </Text>
-                          {productname === "" || productname === null ? (
-                            <Text style={[styles.textgridfail, { fontSize }]}>No Product Name Found</Text>
-                          ) : (
-                            <Text style={[styles.textgridpro, { fontSize }]}>{productname}</Text>
-                          )}
-                          <Text style={styles.headgrid}>Category: </Text>
-                          {category === "" || category === null ? (
-                            <Text style={[styles.textgridfail, { fontSize }]}>No Category Found</Text>
-                          ) : (
-                            <Text style={[styles.textgridpro, { fontSize }]}>{category}</Text>
-                          )}
-                          <Text style={styles.headgrid}>Description:</Text>
-                          {des === "" || des === null || des === "No description found." ? (
-                            <Text style={styles.textgridfail}>No Description Found</Text>
-                          ) : (
-                            <Text style={[styles.textgriddes, { fontSize }]}>{des}</Text>
-                          )}
-                          <Text style={styles.headgridregion}>Region:</Text>
-                          {region === "" || region === null ? (
-                            <Text style={[styles.textgridfail, { fontSize }]}>No Region Found</Text>
-                          ) : (
-                            <Text style={[styles.textgridbrand, { fontSize }]}>{region}</Text>
-                          )}
-                          <View style={styles.imagerow}>
-                            <Text style={{ color: 'black', fontSize: 15, fontWeight: 'bold' }} >Image:</Text>
-                            {/* <TouchableOpacity onPress={addCart}>
-                            <Icon
-                              name="cart-plus"
-                              size={25}
-                              color="#00C4CC"
-                            />
-                          </TouchableOpacity> */}
-                          </View>
-                          {/* {imageurl?(
-                        <></>
-                        ):(
-                          <Text>Loading...</Text>
-                        )} */}
-                          {imageurl !== "" ? (
-                            <>
-                              <View style={{ marginTop: 5 }}>
-                                {/* <TouchableOpacity onPress={openImage}> */}
-                                <Image
-                                  source={{ uri: imageurl }}
-                                  style={{ width: 250, height: 250, }}
-                                />
-                                {/* </TouchableOpacity> */}
-                              </View>
-                            </>
-                          ) : (
-                            <Text style={[styles.textgridfail, { fontSize }]}>No Image Found</Text>
-                          )}
-                        </View>
-                        {imageurl !== "" ? (
-                        <>
-                        <Text style={{ fontSize: 14, color: 'black', fontWeight: 'bold', width: 250, flexWrap: 'wrap', marginTop: 5, }}>Does the scanned image match the item you’re going to purchase?</Text>
-                        <View style={styles.row}>
-                          <TouchableOpacity onPress={handeltakeSCreenshot}>
-                            <Text style={styles.buttoniamgeNoText}>
-                              NO
-                              <Icon
-                                name="close-circle"
-                                size={15}
-                                color="white"
-                              />
-                            </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={popupsucesss}>
-                            <Text style={styles.buttoniamgeYesText}>
-                              YES
-                              <Icon
-                                name="check-circle"
-                                size={15}
-                                color="white"
-                              />
-                            </Text>
-                          </TouchableOpacity>
-                          {/* <Button title='No' color="#faa19b" onPress={handeltakeSCreenshot}/>
-                      <Button title='Yes' color="#caeec2" onPress={popupsucesss} /> */}
-                        </View>
-                        </>
-                        ):(
-                          <></>
-                        )}
-                      {/* </ViewShot> */}
-                      {/* <TouchableOpacity style={styles.productclosebutton} onPress={close}>
-              <Text style={styles.closetext}>CLOSE</Text>
-            </TouchableOpacity>  */}
-                    </ScrollView>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-            {/* <Modal visible={visibleimg} transparent={true}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <View >
-                    <ScrollView
-                      style={styles.ImagescrollView}
-                      vertical={true}
-                    >
-                      <Image
-                        source={{ uri: imagelarge }}
-                        style={{ width: 250, height: 250, }}
-                      />
-                    </ScrollView>
-                  </View>
-                  <TouchableOpacity style={styles.closebutton} onPress={closeImage}>
-                    <Text style={styles.closetext}>CLOSE</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal> */}
-
-
-            {/* <Modal visible={popupdialog} transparent={true}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <Text style={{ fontSize: 15, color: 'black', fontWeight: 'bold' }}>Thanks For Your Feedback</Text>
-                  <View style={styles.popupicon}>
-                    <Icon
-                      name="heart"
-                      size={30}
-                      color="#DC143C"
-                    />
-                  </View>
-                </View>
-              </View>
-            </Modal> */}
-
-
+        
+         
 
             {/* NO PRODUCTS FOUND */}
 
             <Modal visible={responsefail} transparent={true}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <Text style={[styles.fakeheader, { color: theme.colors.primary }]}>Sorry, No Products Found !</Text>
-                  <TouchableOpacity style={[styles.errorbutton, { backgroundColor: theme.colors.primary }]} onPress={closeError}>
-                    <Text style={styles.errortext}>Close</Text>
-                  </TouchableOpacity>
-                </View>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={styles.fakeheader}>Sorry, No Products Found !</Text>
+                <TouchableOpacity style={styles.errorbutton} onPress={closeError}>
+                  <Text style={styles.errortext}>Close</Text>
+                </TouchableOpacity>
               </View>
-            </Modal>
-
+            </View>
+          </Modal>
 
 
             {/* Network error */}
 
-
             <Modal visible={networkerror} transparent={true}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <View style={styles.gridview}>
-                    <Text style={[styles.fakeheader, { color: theme.colors.primary }]}>Network Error
-                      <Icon
-                        name="access-point-network-off"
-                        size={25}
-                        color={theme.colors.primary}
-                      />
-                    </Text>
-                    <Text style={[styles.faketext, { color: theme.colors.primary }]}>Please try again later to scan the products
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={[styles.errorbutton, { backgroundColor: theme.colors.primary }]} onPress={networkError}>
-                    <Text style={styles.errortext}>CLOSE</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-
-            <Dialog.Container visible={networkslow} animationType="slide" >
-              <Dialog.Description>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
                 <View style={styles.gridview}>
-                  <Text style={[styles.fakeheader, { color: theme.colors.primary }]}>Network Error
+                  <Text style={styles.fakeheader}>Network Error
                     <Icon
                       name="access-point-network-off"
                       size={25}
-                      color={theme.colors.primary}
+                      // color="#04467e"
+                      color="#1D211D"
                     />
                   </Text>
-                  <Text style={[styles.faketext, { color: theme.colors.primary }]}>Please check your connection and try again.
+                  <Text style={styles.faketext}>Please try again later to scan the products
                   </Text>
                 </View>
-              </Dialog.Description>
-              {/* <Dialog.Button label="close" onPress={closeImage} style={{backgroundColor:'rgb(42, 107, 211)',color:"white",width:100 }}/> */}
-              <TouchableOpacity style={[styles.errorbutton, { backgroundColor: theme.colors.primary }]} onPress={closenetworkslow}>
-                <Text style={styles.errortext}>Close</Text>
-              </TouchableOpacity>
-            </Dialog.Container>
+                <TouchableOpacity style={styles.errorbutton} onPress={networkError}>
+                  <Text style={styles.errortext}>CLOSE</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          <Dialog.Container visible={networkslow} animationType="slide" >
+            <Dialog.Description>
+              <View style={styles.gridview}>
+                <Text style={styles.fakeheader}>Network Error
+                  <Icon
+                    name="access-point-network-off"
+                    size={25}
+                    //color="#04467e"
+                    color="#1D211D"
+                  />
+                </Text>
+                <Text style={styles.faketext}>Please check your connection and try again.
+                </Text>
+              </View>
+            </Dialog.Description>
+            {/* <Dialog.Button label="close" onPress={closeImage} style={{backgroundColor:'rgb(42, 107, 211)',color:"white",width:100 }}/> */}
+            <TouchableOpacity style={styles.errorbutton} onPress={closenetworkslow}>
+              <Text style={styles.errortext}>Close</Text>
+            </TouchableOpacity>
+          </Dialog.Container>
 
 
 
@@ -1189,7 +918,7 @@ function handleVerifyResult(res) {
               <View style={styles.PopuploadingcenteredView}>
                 <View style={styles.PopuploadingView}>
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: "#04467e" }}>Searching...<Icon size={25} color="#04467e" name="barcode-scan" /></Text>
+                   <Text style={{ fontSize: 15, fontWeight: 'bold', color: !isDarkMode ? "#04467e" : "#ffa500"}}>Searching...<Icon size={25} color={!isDarkMode ? "#04467e" : "#ffa500"} name="barcode-scan" /></Text>
                   </View>
                 </View>
               </View>
@@ -1204,51 +933,18 @@ function handleVerifyResult(res) {
               <View style={styles.PopuploadingcenteredView}>
                 <View style={styles.PopuploadingView}>
                   <View style={{ flex: 1, justifyContent: "center" }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: "#04467e" }}><Icon size={30} color="#04467e" name="camera" /> Loading...</Text>
+                   <Text style={{ fontSize: 20, fontWeight: 'bold', color: !isDarkMode ? "#FF6200" : "#ffa500" }}><Icon size={30} color={!isDarkMode ? "#FF6200" : "#ffa500"} name="camera" /> Loading...</Text>
                   </View>
                 </View>
               </View>
             </Modal>
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={translatestate}
-            >
-              <View style={styles.translatePopuploadingcenteredView}>
-                <View style={styles.translatePopuploadingView}>
-                  <View style={{ flex: 1, justifyContent: "center" }}>
-                    <FlatList
-                      data={Object.values(Translatelanguages)}
-                      renderItem={(itemData) => {
-                        const languageKey = itemData.item;
-                        // const languageString = Translatelanguages[languageKey];
-                        return (
-                          <TouchableOpacity onPress={() => languageselect(languageKey)}>
-                            <Text>{languageKey}</Text>
-                          </TouchableOpacity>
-                        );
-                      }}
-                    />
-                    <TouchableOpacity onPress={closeicontranslate} style={styles.closetranslate} >
-                      <Image
-                        style={styles.tinyLogo}
-                        source={closeimg}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-            {/* <View>
-            </View> */}
           </SafeAreaView>
-          {/* </ScrollView> */}
-          {/* </ImageBackground> */}
         </LinearGradient>
-      </MenuDrawer>
+
     </>
   );
 };
+
 const styles = StyleSheet.create({
   close: {
     position: 'absolute',
@@ -1259,7 +955,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     left: 10,
-    backgroundColor: '#d9e9fb',
+    //backgroundColor: '#d9e9fb',
+    backgroundColor:'#ffa500',
     padding: 10,
     borderRadius: 25,
   },
@@ -1503,10 +1200,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     backgroundColor: 'rgb(71, 162, 228)'
   },
-  tinyLogo: {
-    width: 20,
-    height: 20,
-  },
+
   transLogo: {
     width: 24,
     height: 24,
@@ -1673,7 +1367,8 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 40,
     width: 100,
-    backgroundColor: '#04467e',
+    //backgroundColor: '#04467e',
+    backgroundColor:'#1D211D',
     borderRadius: 50,
     // / borderColor:'rgb(253, 126, 20)',
     flex: '1',
@@ -1726,13 +1421,15 @@ const styles = StyleSheet.create({
   },
   fakeheader: {
     fontSize: 19,
-    color: '#04467e',
+    //color: '#04467e',
+    color:'#1D211D',
     // flex:1,
     flexWrap: "wrap"
   },
   faketext: {
     fontSize: 17,
-    color: '#04467e'
+   // color: '#04467e'
+   color:'#1D211D'
   },
   textgridbrand: {
     fontSize: 15,
@@ -1744,20 +1441,24 @@ const styles = StyleSheet.create({
     color: 'red'
     // color: '#4c99f6',
   },
-  trochConatiner: {
-    position: 'absolute',
-    top: 15,
-    right: 10,
-    backgroundColor: '#d9e9fb',
-    padding: 10,
-    borderRadius: 25,
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-
-  },
+  cameraControlsRow: {
+  position: 'absolute',
+  top: 15,
+  right: 10,
+  flexDirection: 'column',
+  gap: 10,
+},
+trochConatiner: {
+  // backgroundColor: '#ffa500',
+  backgroundColor:'#FF6200',
+  padding: 10,
+  borderRadius: 25,
+},
+resetContainer: {
+  backgroundColor: '#FF6200',
+  padding: 10,
+  borderRadius: 25,
+},
 
   backgroundimage: {
     flex: 1,
@@ -1811,4 +1512,3 @@ const styles = StyleSheet.create({
     paddingTop: 10
   }
 });
-
